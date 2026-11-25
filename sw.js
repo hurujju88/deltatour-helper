@@ -1,5 +1,5 @@
 /* 델타투어 실무 보조 — 오프라인 캐시 */
-var CACHE = 'deltatour-helper-v4';
+var CACHE = 'deltatour-helper-v5';
 var ASSETS = [
   './',
   './index.html',
