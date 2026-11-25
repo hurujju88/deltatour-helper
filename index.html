@@ -1,0 +1,1734 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>델타투어 실무 보조</title>
+<meta name="description" content="델타투어(하나투어 공식인증 대리점) 실무 보조 — 카톡 안내문, 여행사 계산기, 출발 체크">
+<meta name="theme-color" content="#1B2A4A">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./apple-touch-icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="델타투어">
+<style>
+:root{
+  --ivory:#FAF8F5;
+  --ivory-2:#F4EFE7;
+  --navy:#1B2A4A;
+  --navy-soft:#2B3C63;
+  --line:#E6E0D6;
+  --line-soft:#F0EBE2;
+  --muted:#6E6A5F;
+  --muted-2:#8F897B;
+  --alert:#B4432F;
+  --ok:#2F6B4F;
+  --gold:#B59A6A;
+  --radius:16px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;padding:0;background:var(--ivory);color:var(--navy);
+  font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,-apple-system,sans-serif;
+  font-size:16px;line-height:1.55;letter-spacing:-0.01em;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;cursor:pointer}
+input,textarea,select{font-family:inherit}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky;top:0;z-index:20;
+  display:flex;align-items:center;gap:11px;
+  padding:12px 18px 11px;
+  background:rgba(250,248,245,.95);
+  -webkit-backdrop-filter:saturate(180%) blur(10px);
+  backdrop-filter:saturate(180%) blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.brand-mark{
+  width:36px;height:36px;border-radius:11px;flex:0 0 auto;
+  background:var(--navy);color:#F7F2E9;
+  display:grid;place-items:center;
+  font-size:13px;font-weight:700;letter-spacing:.06em;
+}
+.brand-name{margin:0;font-size:13px;font-weight:700;letter-spacing:.14em;color:var(--navy)}
+.brand-sub{margin:2px 0 0;font-size:11.5px;color:var(--muted-2);letter-spacing:.01em}
+
+/* ---------- layout ---------- */
+main{padding:14px 16px calc(94px + env(safe-area-inset-bottom))}
+.panel{display:none}
+.panel.on{display:block}
+.card{
+  background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px;margin-bottom:12px;
+  box-shadow:0 1px 2px rgba(27,42,74,.035);
+}
+.card:last-child{margin-bottom:0}
+.card-title{
+  margin:0 0 13px;font-size:12.5px;font-weight:700;letter-spacing:.08em;
+  color:var(--muted-2);
+}
+.card-title .num{
+  display:inline-grid;place-items:center;width:18px;height:18px;border-radius:6px;
+  background:var(--ivory-2);color:var(--navy);font-size:11px;margin-right:7px;
+  letter-spacing:0;
+}
+.hint{margin:8px 0 0;font-size:12.5px;color:var(--muted-2);line-height:1.5}
+
+/* ---------- fields ---------- */
+.field{margin-bottom:13px}
+.field:last-child{margin-bottom:0}
+.field > label,.field-label{
+  display:block;font-size:13px;font-weight:600;color:#5C5649;margin-bottom:7px;
+}
+.field-label .opt{font-weight:500;color:var(--muted-2);font-size:12px;margin-left:4px}
+input[type=text],input[type=url],input[type=date],input[type=number],textarea{
+  width:100%;min-height:48px;padding:12px 14px;
+  font-size:16px;color:var(--navy);background:#fff;
+  border:1px solid var(--line);border-radius:12px;outline:none;
+  -webkit-appearance:none;appearance:none;
+}
+textarea{min-height:76px;resize:vertical;line-height:1.55}
+input:focus,textarea:focus{border-color:var(--navy-soft);box-shadow:0 0 0 3px rgba(27,42,74,.07)}
+input::placeholder,textarea::placeholder{color:#B4AE9F}
+input[type=date]{min-height:48px}
+input[type=date]::-webkit-date-and-time-value{text-align:left}
+
+.row{display:grid;gap:10px}
+.row.two{grid-template-columns:1fr 1fr}
+.row.side{grid-template-columns:1fr 116px;align-items:end}
+
+/* ---------- chips ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{
+  min-height:38px;padding:0 14px;border-radius:999px;
+  border:1px solid var(--line);background:#fff;color:#454B5A;
+  font-size:14px;font-weight:600;letter-spacing:-0.01em;
+  display:inline-flex;align-items:center;
+}
+.chip.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.chip:active{transform:scale(.985)}
+
+/* ---------- stepper ---------- */
+.stepper{
+  display:flex;align-items:stretch;height:48px;overflow:hidden;
+  border:1px solid var(--line);border-radius:12px;background:#fff;
+}
+.stepper button{
+  width:42px;border:0;background:var(--ivory-2);color:var(--navy);
+  font-size:20px;font-weight:600;line-height:1;
+}
+.stepper button:active{background:#E8E1D5}
+.stepper input{
+  flex:1 1 auto;width:100%;min-height:0;height:100%;padding:0;border:0;border-radius:0;
+  text-align:center;font-size:16px;font-weight:700;background:#fff;box-shadow:none!important;
+}
+.pax-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.pax-name{font-size:12.5px;color:var(--muted);margin:0 0 5px;text-align:center}
+
+/* ---------- segmented ---------- */
+.seg{display:flex;gap:4px;background:#F1ECE3;border-radius:12px;padding:4px;margin-bottom:13px}
+.seg button{
+  flex:1;min-height:40px;border:0;border-radius:9px;background:transparent;
+  font-size:14px;font-weight:600;color:#6B6558;
+}
+.seg button.on{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(27,42,74,.12);font-weight:700}
+
+/* ---------- buttons ---------- */
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  width:100%;min-height:52px;padding:0 16px;border:0;border-radius:14px;
+  background:var(--navy);color:#fff;font-size:16px;font-weight:700;letter-spacing:-0.01em;
+}
+.btn:active{background:#16223C}
+.btn.ghost{background:#fff;border:1.5px solid var(--navy);color:var(--navy)}
+.btn.ghost:active{background:var(--ivory-2)}
+.btn.small{min-height:42px;padding:0 15px;font-size:13.5px;width:auto;border-radius:11px}
+.btn.sub{min-height:46px;font-size:15px}
+.btn-row{display:flex;gap:8px;margin-top:12px}
+.btn-row .btn{flex:1}
+
+/* ---------- switches ---------- */
+.switch-row{
+  display:flex;align-items:center;gap:12px;min-height:48px;position:relative;
+  border-bottom:1px solid var(--line-soft);
+}
+.switch-row:last-of-type{border-bottom:0}
+.switch-row input{position:absolute;opacity:0;width:1px;height:1px;margin:0}
+.switch{
+  width:46px;height:28px;border-radius:999px;background:#DCD5C8;
+  position:relative;flex:0 0 auto;transition:background .18s;
+}
+.switch::after{
+  content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 2px rgba(27,42,74,.25);transition:transform .18s;
+}
+.switch-row input:checked + .switch{background:var(--navy)}
+.switch-row input:checked + .switch::after{transform:translateX(18px)}
+.switch-label{font-size:14.5px;color:#3D4351;font-weight:500}
+
+/* ---------- preview ---------- */
+.preview-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.preview-head .card-title{margin:0;letter-spacing:.04em;color:var(--navy);font-size:13px}
+.preview{
+  white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;
+  margin:0;padding:15px;border-radius:12px;
+  background:#FBF8F2;border:1px dashed #DCD3C0;
+  font-size:14px;line-height:1.72;color:#2A3140;letter-spacing:-0.01em;
+  max-height:60vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+}
+
+/* ---------- summary rows ---------- */
+.sums{margin:4px 0 0}
+.sum{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line-soft)}
+.sum:last-child{border-bottom:0}
+.sum .k{font-size:13.5px;color:var(--muted);flex:1 1 auto}
+.sum .v{font-size:15.5px;font-weight:700;text-align:right;white-space:nowrap}
+.sum.total{padding-top:13px;border-top:1px solid var(--line);border-bottom:0;margin-top:4px}
+.sum.total .k{font-size:14px;font-weight:700;color:var(--navy)}
+.sum.total .v{font-size:23px;font-weight:800;letter-spacing:-0.02em}
+.sum.minus .v{color:var(--alert)}
+.note{margin:10px 0 0;padding:10px 12px;border-radius:10px;background:var(--ivory-2);font-size:12.5px;color:#6B6558;line-height:1.55}
+
+/* ---------- rate / fx ---------- */
+.rate-line{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  font-size:13.5px;color:var(--muted);margin:0 0 12px;
+}
+.rate-line input{
+  width:104px;min-height:40px;padding:8px 10px;text-align:right;font-weight:700;
+  font-size:15px;border-radius:9px;
+}
+.fx-box{
+  display:grid;gap:10px;grid-template-columns:1fr auto 1fr;align-items:center;
+  margin-bottom:10px;
+}
+.fx-cell{min-width:0}
+.fx-cell label{display:block;font-size:12px;font-weight:600;color:var(--muted-2);margin-bottom:5px}
+.fx-cell input{min-height:52px;font-size:18px;font-weight:700;text-align:right;padding:10px 12px}
+.fx-eq{font-size:12.5px;color:var(--muted-2);margin-top:5px;text-align:right;min-height:17px}
+.fx-swap{color:var(--muted-2);font-size:16px;padding:0 2px;margin-top:16px}
+details.rate-settings{margin-top:4px}
+details.rate-settings summary{
+  font-size:13px;color:var(--navy);font-weight:600;padding:9px 0;list-style:none;
+  display:flex;align-items:center;gap:6px;
+}
+details.rate-settings summary::-webkit-details-marker{display:none}
+details.rate-settings summary::before{content:"＋";color:var(--muted-2);font-size:13px}
+details.rate-settings[open] summary::before{content:"−"}
+.rate-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.rate-grid .field{margin-bottom:0}
+.rate-grid input{min-height:44px}
+
+/* ---------- trips ---------- */
+.trip{
+  background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+  padding:15px;margin-bottom:11px;box-shadow:0 1px 2px rgba(27,42,74,.035);
+}
+.trip-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.trip-name{margin:0;font-size:16.5px;font-weight:700;letter-spacing:-0.015em}
+.trip-sub{margin:4px 0 0;font-size:12.5px;color:var(--muted-2)}
+.dday{
+  flex:0 0 auto;min-width:58px;height:28px;padding:0 9px;border-radius:9px;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--navy);color:#fff;font-size:12.5px;font-weight:800;letter-spacing:.02em;
+}
+.dday.soon{background:var(--alert)}
+.dday.today{background:var(--alert)}
+.dday.past{background:#D9D3C6;color:#6B6558}
+.prog{height:5px;border-radius:99px;background:var(--line-soft);margin:12px 0 6px;overflow:hidden}
+.prog-bar{height:100%;background:var(--navy);border-radius:99px;transition:width .2s}
+.prog-txt{margin:0 0 8px;font-size:11.5px;color:var(--muted-2);letter-spacing:.02em}
+.checks{display:block;border-top:1px solid var(--line-soft)}
+.check{
+  display:flex;align-items:center;gap:11px;width:100%;min-height:46px;padding:0;
+  border:0;border-bottom:1px solid var(--line-soft);background:transparent;text-align:left;
+}
+.check:last-child{border-bottom:0}
+.check .box{
+  width:22px;height:22px;border-radius:7px;border:1.5px solid #CBC3B4;
+  flex:0 0 auto;display:grid;place-items:center;transition:background .15s,border-color .15s;
+}
+.check .box svg{opacity:0;transition:opacity .15s}
+.check.on .box{background:var(--navy);border-color:var(--navy)}
+.check.on .box svg{opacity:1}
+.check .lbl{font-size:14.5px;color:#3A4152;font-weight:500}
+.check.on .lbl{color:#A8A294;text-decoration:line-through;text-decoration-color:#C9C2B4}
+.trip-memo{
+  margin:11px 0 0;padding:10px 12px;border-radius:10px;background:#FBF8F2;
+  font-size:13px;color:#5D5749;white-space:pre-wrap;word-break:break-word;
+}
+.trip-actions{display:flex;gap:8px;margin-top:12px;justify-content:flex-end}
+.trip-actions button{
+  min-height:38px;padding:0 14px;border-radius:10px;border:1px solid var(--line);
+  background:#fff;color:var(--muted);font-size:13px;font-weight:600;
+}
+.trip-actions button.del{color:var(--alert);border-color:#EBD5CF}
+.empty{
+  padding:40px 18px;text-align:center;color:var(--muted-2);font-size:14px;
+  border:1px dashed var(--line);border-radius:var(--radius);background:rgba(255,255,255,.5);
+  line-height:1.6;
+}
+
+/* ---------- tab bar ---------- */
+.tabbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;
+  display:flex;padding:6px 8px calc(6px + env(safe-area-inset-bottom));
+  background:rgba(255,255,255,.97);
+  -webkit-backdrop-filter:saturate(180%) blur(12px);
+  backdrop-filter:saturate(180%) blur(12px);
+  border-top:1px solid var(--line);
+}
+.tab{
+  flex:1;border:0;background:transparent;border-radius:12px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:5px 0 4px;color:#918A7B;font-size:11.5px;font-weight:600;letter-spacing:-0.01em;
+}
+.tab .ic{width:34px;height:26px;border-radius:8px;display:grid;place-items:center;transition:background .15s}
+.tab.on{color:var(--navy)}
+.tab.on .ic{background:rgba(27,42,74,.08)}
+.tab svg{display:block}
+
+/* ---------- toast ---------- */
+.toast{
+  position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));
+  transform:translate(-50%,10px);opacity:0;pointer-events:none;
+  background:var(--navy);color:#fff;font-size:13.5px;font-weight:600;
+  padding:11px 18px;border-radius:12px;z-index:60;white-space:nowrap;
+  box-shadow:0 6px 18px rgba(27,42,74,.22);transition:opacity .2s,transform .2s;
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- small print ---------- */
+.foot{
+  margin:16px 4px 0;font-size:11.5px;color:var(--muted-2);line-height:1.6;text-align:center;
+}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (max-width:359px){
+  main{padding-left:12px;padding-right:12px}
+  .brand-sub{display:none}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand-mark">DT</div>
+  <div>
+    <p class="brand-name">DELTA TOUR</p>
+    <p class="brand-sub">하나투어 공식인증 대리점 · 실무 보조</p>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ 안내문 ============ -->
+  <section class="panel on" id="panel-msg" aria-label="안내문 만들기">
+
+    <div class="card">
+      <p class="card-title">기본 정보</p>
+
+      <div class="field">
+        <label for="mName">고객명 <span class="opt">선택</span></label>
+        <input type="text" id="mName" placeholder="예) 김민지" autocomplete="off">
+      </div>
+
+      <div class="field">
+        <label for="mDest">여행지</label>
+        <div class="chips" id="destChips" style="margin-bottom:9px">
+          <button type="button" class="chip" data-dest="다낭">다낭</button>
+          <button type="button" class="chip" data-dest="나트랑">나트랑</button>
+          <button type="button" class="chip" data-dest="푸꾸옥">푸꾸옥</button>
+          <button type="button" class="chip" data-dest="발리">발리</button>
+          <button type="button" class="chip" data-dest="일본">일본</button>
+          <button type="button" class="chip" data-dest="태국">태국</button>
+          <button type="button" class="chip" data-dest="유럽">유럽</button>
+        </div>
+        <input type="text" id="mDest" placeholder="직접 입력 (예) 세부" autocomplete="off">
+      </div>
+
+      <div class="row two" style="margin-bottom:13px">
+        <div class="field" style="margin:0">
+          <label for="mDate">출발일</label>
+          <input type="date" id="mDate">
+        </div>
+        <div class="field" style="margin:0">
+          <label for="mDur">일정</label>
+          <input type="text" id="mDur" placeholder="3박 5일" inputmode="text" autocomplete="off">
+        </div>
+      </div>
+      <div class="chips" id="durChips">
+        <button type="button" class="chip" data-dur="2박 3일">2박 3일</button>
+        <button type="button" class="chip" data-dur="3박 4일">3박 4일</button>
+        <button type="button" class="chip on" data-dur="3박 5일">3박 5일</button>
+        <button type="button" class="chip" data-dur="4박 5일">4박 5일</button>
+        <button type="button" class="chip" data-dur="5박 6일">5박 6일</button>
+      </div>
+
+      <div class="field" style="margin-top:15px;margin-bottom:0">
+        <span class="field-label">인원</span>
+        <div class="pax-grid">
+          <div>
+            <p class="pax-name">성인</p>
+            <div class="stepper" data-pax="adult">
+              <button type="button" data-d="-1" aria-label="성인 줄이기">−</button>
+              <input type="text" id="paxAdult" value="2" inputmode="numeric" aria-label="성인 인원">
+              <button type="button" data-d="1" aria-label="성인 늘리기">+</button>
+            </div>
+          </div>
+          <div>
+            <p class="pax-name">아동</p>
+            <div class="stepper" data-pax="child">
+              <button type="button" data-d="-1" aria-label="아동 줄이기">−</button>
+              <input type="text" id="paxChild" value="0" inputmode="numeric" aria-label="아동 인원">
+              <button type="button" data-d="1" aria-label="아동 늘리기">+</button>
+            </div>
+          </div>
+          <div>
+            <p class="pax-name">유아</p>
+            <div class="stepper" data-pax="infant">
+              <button type="button" data-d="-1" aria-label="유아 줄이기">−</button>
+              <input type="text" id="paxInfant" value="0" inputmode="numeric" aria-label="유아 인원">
+              <button type="button" data-d="1" aria-label="유아 늘리기">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="card-title">요금 안내</p>
+      <div class="seg" id="priceMode">
+        <button type="button" class="on" data-mode="per">1인 금액</button>
+        <button type="button" data-mode="total">총액</button>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label for="mPrice" id="priceLabel">1인 금액 (원)</label>
+        <input type="text" id="mPrice" placeholder="890,000" inputmode="numeric" autocomplete="off">
+        <p class="hint" id="priceHint"></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="card-title">핵심 포인트</p>
+      <div class="chips" id="pointChips">
+        <button type="button" class="chip" data-point="노쇼핑">노쇼핑</button>
+        <button type="button" class="chip" data-point="자유일정 포함">자유일정 포함</button>
+        <button type="button" class="chip" data-point="5성급 리조트">5성급 리조트</button>
+        <button type="button" class="chip" data-point="풀빌라">풀빌라</button>
+        <button type="button" class="chip" data-point="단독차량">단독차량</button>
+        <button type="button" class="chip" data-point="전일정 식사 포함">전일정 식사 포함</button>
+        <button type="button" class="chip" data-point="한국인 가이드">한국인 가이드</button>
+        <button type="button" class="chip" data-point="마사지 1회 포함">마사지 1회 포함</button>
+        <button type="button" class="chip" data-point="조식 포함">조식 포함</button>
+      </div>
+      <div class="row side" style="margin-top:11px">
+        <input type="text" id="mPointCustom" placeholder="직접 추가 (예) 수영장 뷰" autocomplete="off">
+        <button type="button" class="btn ghost small" id="addPoint" style="min-height:48px;width:100%">추가</button>
+      </div>
+      <p class="hint">선택한 포인트는 안내문에 그대로 들어갑니다. 다시 누르면 빠집니다.</p>
+    </div>
+
+    <div class="card">
+      <p class="card-title">하나허브 상품 링크</p>
+      <input type="url" id="mLink" placeholder="https://www.hanatour.com/...?ptnCd=PH05438" inputmode="url" autocomplete="off">
+      <p class="hint" id="linkStatus">링크를 붙이면 대리점 코드(<b>PH05438</b>)를 확인해 드립니다.</p>
+    </div>
+
+    <div class="card">
+      <p class="card-title">자동으로 붙일 안내</p>
+      <label class="switch-row">
+        <input type="checkbox" id="optPassport" checked>
+        <span class="switch" aria-hidden="true"></span>
+        <span class="switch-label">여권 유효기간 6개월 확인</span>
+      </label>
+      <label class="switch-row">
+        <input type="checkbox" id="optEntry" checked>
+        <span class="switch" aria-hidden="true"></span>
+        <span class="switch-label">여행지별 입국·준비 안내</span>
+      </label>
+      <label class="switch-row">
+        <input type="checkbox" id="optSign" checked>
+        <span class="switch" aria-hidden="true"></span>
+        <span class="switch-label">하단 명함 서명</span>
+      </label>
+    </div>
+
+    <div class="card">
+      <div class="preview-head">
+        <p class="card-title">카톡 안내문 미리보기</p>
+        <button type="button" class="btn ghost small" id="copyMsgTop">복사</button>
+      </div>
+      <div class="preview" id="msgPreview"></div>
+    </div>
+
+    <button type="button" class="btn" id="copyMsg">카톡 안내문 복사</button>
+    <p class="foot">보낼 내용을 한 번 읽어 보고 복사해 주세요. 링크·금액은 직접 확인하는 게 안전합니다.</p>
+  </section>
+
+  <!-- ============ 계산기 ============ -->
+  <section class="panel" id="panel-calc" aria-label="계산기">
+    <div class="seg" id="calcSeg" style="margin-bottom:14px">
+      <button type="button" class="on" data-calc="quote">견적</button>
+      <button type="button" data-calc="settle">정산</button>
+      <button type="button" data-calc="fx">환율·팁</button>
+    </div>
+
+    <!-- 견적 -->
+    <div id="calc-quote">
+      <div class="card">
+        <p class="card-title"><span class="num">1</span>단가와 인원</p>
+
+        <div class="field">
+          <label>성인</label>
+          <div class="row two">
+            <input type="text" id="qaPrice" placeholder="단가 (원)" inputmode="numeric" autocomplete="off">
+            <input type="text" id="qaCount" placeholder="인원" inputmode="numeric" value="2" autocomplete="off">
+          </div>
+        </div>
+        <div class="field">
+          <label>아동</label>
+          <div class="row two">
+            <input type="text" id="qcPrice" placeholder="단가 (원)" inputmode="numeric" autocomplete="off">
+            <input type="text" id="qcCount" placeholder="인원" inputmode="numeric" value="0" autocomplete="off">
+          </div>
+        </div>
+        <div class="field">
+          <label>유아</label>
+          <div class="row two">
+            <input type="text" id="qiPrice" placeholder="단가 (원)" inputmode="numeric" autocomplete="off">
+            <input type="text" id="qiCount" placeholder="인원" inputmode="numeric" value="0" autocomplete="off">
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label>추가금 / 할인</label>
+          <div class="row two">
+            <input type="text" id="qExtra" placeholder="추가금 (원)" inputmode="numeric" autocomplete="off">
+            <input type="text" id="qDiscount" placeholder="할인 (원)" inputmode="numeric" autocomplete="off">
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="card-title">합계</p>
+        <div class="sums">
+          <div class="sum"><span class="k">총 인원</span><span class="v" id="qHead">2명</span></div>
+          <div class="sum"><span class="k">추가금</span><span class="v" id="qExtraOut">0원</span></div>
+          <div class="sum minus"><span class="k">할인</span><span class="v" id="qDiscountOut">0원</span></div>
+          <div class="sum total"><span class="k">총 합계</span><span class="v" id="qTotal">0원</span></div>
+          <div class="sum"><span class="k">1인 평균</span><span class="v" id="qPer">0원</span></div>
+        </div>
+        <button type="button" class="btn ghost sub" id="copyQuote" style="margin-top:14px">견적 요약 복사</button>
+      </div>
+    </div>
+
+    <!-- 정산 -->
+    <div id="calc-settle" style="display:none">
+      <div class="card">
+        <p class="card-title"><span class="num">2</span>판매·커미션</p>
+        <div class="field">
+          <label for="sTotal">판매 총액 (원)</label>
+          <input type="text" id="sTotal" placeholder="2,500,000" inputmode="numeric" autocomplete="off">
+        </div>
+        <div class="field">
+          <span class="field-label">커미션 입력 방식</span>
+          <div class="seg" id="commMode" style="margin-bottom:10px">
+            <button type="button" class="on" data-cmode="rate">커미션율 %</button>
+            <button type="button" data-cmode="amount">커미션 금액</button>
+          </div>
+          <input type="text" id="sRate" placeholder="예) 8" inputmode="decimal" autocomplete="off">
+          <input type="text" id="sAmount" placeholder="커미션 금액 (원)" inputmode="numeric" autocomplete="off" style="display:none">
+        </div>
+        <div class="row two" style="margin-bottom:0">
+          <div class="field" style="margin:0">
+            <label for="sCard">카드 수수료 %</label>
+            <input type="text" id="sCard" placeholder="2.5" inputmode="decimal" autocomplete="off">
+          </div>
+          <div class="field" style="margin:0">
+            <label for="sEtc">기타 경비 (원)</label>
+            <input type="text" id="sEtc" placeholder="0" inputmode="numeric" autocomplete="off">
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="card-title">정산 결과</p>
+        <div class="sums">
+          <div class="sum"><span class="k">예상 커미션</span><span class="v" id="sComm">0원</span></div>
+          <div class="sum minus"><span class="k">카드 수수료</span><span class="v" id="sCardOut">0원</span></div>
+          <div class="sum minus"><span class="k">기타 경비</span><span class="v" id="sEtcOut">0원</span></div>
+          <div class="sum minus"><span class="k">예상 부가세 (참고)</span><span class="v" id="sVat">0원</span></div>
+          <div class="sum total"><span class="k">순수익 (예상)</span><span class="v" id="sNet">0원</span></div>
+          <div class="sum"><span class="k">부가세 제외 시</span><span class="v" id="sNetNoVat">0원</span></div>
+        </div>
+        <p class="note">부가세는 커미션의 10%로 계산한 참고치입니다. 실제 납부액은 매출세액에서 매입세액을 뺀 금액이라 달라질 수 있어요.</p>
+      </div>
+    </div>
+
+    <!-- 환율 -->
+    <div id="calc-fx" style="display:none">
+      <div class="card">
+        <p class="card-title"><span class="num">3</span>간편 환율</p>
+        <div class="chips" id="fxChips" style="margin-bottom:14px">
+          <button type="button" class="chip on" data-cur="USD">USD $</button>
+          <button type="button" class="chip" data-cur="JPY">JPY ¥</button>
+          <button type="button" class="chip" data-cur="VND">VND ₫</button>
+          <button type="button" class="chip" data-cur="THB">THB ฿</button>
+        </div>
+
+        <div class="rate-line">
+          <span>1 <b id="fxUnit">USD</b> =</span>
+          <input type="text" id="fxRate" inputmode="decimal" aria-label="적용 환율">
+          <span>원</span>
+        </div>
+
+        <div class="fx-box">
+          <div class="fx-cell">
+            <label for="fxKrw">원 (KRW)</label>
+            <input type="text" id="fxKrw" placeholder="0" inputmode="numeric" autocomplete="off">
+            <div class="fx-eq" id="fxKrwEq"></div>
+          </div>
+          <div class="fx-swap" aria-hidden="true">↔</div>
+          <div class="fx-cell">
+            <label for="fxFor"><span id="fxForLabel">달러 (USD)</span></label>
+            <input type="text" id="fxFor" placeholder="0" inputmode="decimal" autocomplete="off">
+            <div class="fx-eq" id="fxForEq"></div>
+          </div>
+        </div>
+
+        <details class="rate-settings">
+          <summary>환율 직접 수정 (참고 환율)</summary>
+          <div class="rate-grid">
+            <div class="field"><label for="rateUSD">USD (1달러)</label><input type="text" id="rateUSD" inputmode="decimal"></div>
+            <div class="field"><label for="rateJPY">JPY (1엔)</label><input type="text" id="rateJPY" inputmode="decimal"></div>
+            <div class="field"><label for="rateVND">VND (1동)</label><input type="text" id="rateVND" inputmode="decimal"></div>
+            <div class="field"><label for="rateTHB">THB (1바트)</label><input type="text" id="rateTHB" inputmode="decimal"></div>
+          </div>
+          <p class="hint">기본값은 참고용입니다. 실제 적용 환율로 고쳐 쓰면 이 기기에 저장됩니다.</p>
+        </details>
+      </div>
+
+      <div class="card">
+        <p class="card-title">가이드·기사 팁</p>
+        <div class="row two" style="margin-bottom:10px">
+          <div class="field" style="margin:0">
+            <label for="tipUsd">1인 팁 (USD)</label>
+            <input type="text" id="tipUsd" placeholder="5" inputmode="decimal" value="5" autocomplete="off">
+          </div>
+          <div class="field" style="margin:0">
+            <label for="tipCount">인원</label>
+            <input type="text" id="tipCount" placeholder="2" inputmode="numeric" value="2" autocomplete="off">
+          </div>
+        </div>
+        <div class="sums">
+          <div class="sum"><span class="k">총 팁</span><span class="v" id="tipTotal">0 USD</span></div>
+          <div class="sum total"><span class="k">원화 환산</span><span class="v" id="tipKrw">0원</span></div>
+        </div>
+        <p class="hint">현지에서 달러로 걷는 팁을 원화로 미리 안내할 때 씁니다. 위의 USD 환율을 그대로 씁니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 출발체크 ============ -->
+  <section class="panel" id="panel-check" aria-label="출발 체크">
+    <div class="card">
+      <p class="card-title" id="tripFormTitle">손님 추가</p>
+      <div class="field">
+        <label for="tName">고객명</label>
+        <input type="text" id="tName" placeholder="예) 김민지" autocomplete="off">
+      </div>
+      <div class="row two" style="margin-bottom:13px">
+        <div class="field" style="margin:0">
+          <label for="tDest">여행지</label>
+          <input type="text" id="tDest" placeholder="다낭" autocomplete="off">
+        </div>
+        <div class="field" style="margin:0">
+          <label for="tDate">출발일</label>
+          <input type="date" id="tDate">
+        </div>
+      </div>
+      <div class="field">
+        <label for="tPax">인원</label>
+        <input type="text" id="tPax" placeholder="성인 2, 아동 1" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="tMemo">메모 <span class="opt">선택</span></label>
+        <textarea id="tMemo" placeholder="픽업 시간, 요청사항 등"></textarea>
+      </div>
+      <button type="button" class="btn sub" id="tripSave">출발체크에 추가</button>
+      <div class="btn-row" id="tripEditActions" style="display:none">
+        <button type="button" class="btn ghost sub" id="tripCancel">취소</button>
+      </div>
+    </div>
+
+    <div id="tripList"></div>
+    <p class="foot">손님 정보는 이 휴대폰 브라우저에만 저장됩니다. 서버로 보내지 않습니다.</p>
+  </section>
+
+</main>
+
+<nav class="tabbar" aria-label="주요 메뉴">
+  <button type="button" class="tab on" data-tab="msg" aria-current="page">
+    <span class="ic">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-3.3-.6L3 21l1.6-4.7A8.3 8.3 0 0 1 3.6 11.5 8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/>
+      </svg>
+    </span>
+    안내문
+  </button>
+  <button type="button" class="tab" data-tab="calc">
+    <span class="ic">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="4.5" y="2.5" width="15" height="19" rx="2.6"/>
+        <path d="M8 7h8M8 12h2M14 12h2M8 16.5h2M14 16.5h2"/>
+      </svg>
+    </span>
+    계산기
+  </button>
+  <button type="button" class="tab" data-tab="check">
+    <span class="ic">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9 3.5h6a1.5 1.5 0 0 1 1.5 1.5v1h1.2A2.3 2.3 0 0 1 20 8.3v11.2A1.5 1.5 0 0 1 18.5 21h-13A1.5 1.5 0 0 1 4 19.5V8.3a2.3 2.3 0 0 1 2.3-2.3h1.2V5A1.5 1.5 0 0 1 9 3.5Z"/>
+        <path d="M8.5 12.5l2.2 2.2 4.3-4.3"/>
+      </svg>
+    </span>
+    출발체크
+  </button>
+</nav>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* =========================================================
+     유틸
+  ========================================================= */
+  var $ = function (sel, root) { return (root || document).querySelector(sel); };
+  var $$ = function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
+
+  var AGENT_CODE = 'PH05438';
+  var SIGN = 'DELTA TOUR | 하나투어 공식인증 대리점 · 박주연 실장 · 010-9692-5632 · 카카오톡 ID : POK1206';
+  var WD = ['일', '월', '화', '수', '목', '금', '토'];
+
+  function digits(v) { return String(v == null ? '' : v).replace(/[^0-9]/g, ''); }
+  function num(v) { return Number(digits(v)) || 0; }
+  function dec(v) { var n = parseFloat(String(v == null ? '' : v).replace(/[^0-9.\-]/g, '')); return isFinite(n) ? n : 0; }
+  function fmt(n) { return Math.round(Number(n) || 0).toLocaleString('ko-KR'); }
+  function won(n) { return fmt(n) + '원'; }
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function clampInt(v, min, max) {
+    var n = parseInt(digits(v), 10);
+    if (!isFinite(n)) n = min;
+    if (n < min) n = min;
+    if (n > max) n = max;
+    return n;
+  }
+  function comma(v) { return digits(v) ? Number(digits(v)).toLocaleString('ko-KR') : ''; }
+
+  function todayYmd() {
+    var d = new Date();
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+  function parseYmd(s) {
+    if (!s) return null;
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+    if (!m) return null;
+    return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  }
+  function ymd(d) {
+    var mm = ('0' + (d.getMonth() + 1)).slice(-2);
+    var dd = ('0' + d.getDate()).slice(-2);
+    return d.getFullYear() + '-' + mm + '-' + dd;
+  }
+  function addDays(d, n) { var x = new Date(d.getTime()); x.setDate(x.getDate() + n); return x; }
+  function diffDays(from, to) {
+    return Math.round((Date.UTC(to.getFullYear(), to.getMonth(), to.getDate()) -
+      Date.UTC(from.getFullYear(), from.getMonth(), from.getDate())) / 86400000);
+  }
+  function kDate(d) {
+    return d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일(' + WD[d.getDay()] + ')';
+  }
+  function dotDate(d) {
+    var mm = ('0' + (d.getMonth() + 1)).slice(-2);
+    var dd = ('0' + d.getDate()).slice(-2);
+    return d.getFullYear() + '.' + mm + '.' + dd + ' (' + WD[d.getDay()] + ')';
+  }
+  function parseDuration(s) {
+    var m = /(\d+)\s*박\s*(\d+)\s*일/.exec(String(s || ''));
+    if (!m) return null;
+    return { nights: Number(m[1]), days: Number(m[2]) };
+  }
+
+  /* =========================================================
+     저장소 (localStorage → 메모리 폴백)
+  ========================================================= */
+  var store = (function () {
+    var mem = {};
+    var ok = true;
+    try {
+      var k = '__dt_probe__';
+      window.localStorage.setItem(k, '1');
+      window.localStorage.removeItem(k);
+    } catch (e) { ok = false; }
+    return {
+      get: function (key, dflt) {
+        if (ok) {
+          try {
+            var raw = window.localStorage.getItem(key);
+            if (raw !== null) return JSON.parse(raw);
+          } catch (e) {}
+        }
+        return Object.prototype.hasOwnProperty.call(mem, key) ? mem[key] : dflt;
+      },
+      set: function (key, val) {
+        mem[key] = val;
+        if (ok) {
+          try { window.localStorage.setItem(key, JSON.stringify(val)); } catch (e) { ok = false; }
+        }
+      },
+      remove: function (key) {
+        delete mem[key];
+        if (ok) {
+          try { window.localStorage.removeItem(key); } catch (e) {}
+        }
+      }
+    };
+  })();
+
+  /* =========================================================
+     토스트 · 복사
+  ========================================================= */
+  var toastEl = $('#toast');
+  var toastTimer = null;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 1900);
+  }
+
+  function copyText(text) {
+    function fallback() {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.top = '-1000px';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        ta.setSelectionRange(0, ta.value.length);
+        var done = document.execCommand('copy');
+        document.body.removeChild(ta);
+        return done;
+      } catch (e) { return false; }
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text).then(function () { return true; }, fallback);
+    }
+    return Promise.resolve(fallback());
+  }
+
+  function bindCopy(btn, getter) {
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var text = getter();
+      if (!text) { toast('복사할 내용이 없습니다'); return; }
+      Promise.resolve(copyText(text)).then(function (ok) {
+        toast(ok ? '복사 완료 — 카톡에 붙여넣으세요' : '복사하지 못했습니다. 길게 눌러 직접 복사해 주세요');
+      });
+    });
+  }
+
+  /* =========================================================
+     탭 전환
+  ========================================================= */
+  var lastTab = store.get('dt.tab', 'msg');
+  function showTab(name) {
+    $$('.panel').forEach(function (p) { p.classList.toggle('on', p.id === 'panel-' + name); });
+    $$('.tab').forEach(function (b) {
+      var on = b.getAttribute('data-tab') === name;
+      b.classList.toggle('on', on);
+      if (on) { b.setAttribute('aria-current', 'page'); } else { b.removeAttribute('aria-current'); }
+    });
+    store.set('dt.tab', name);
+    window.scrollTo(0, 0);
+  }
+  $$('.tab').forEach(function (b) {
+    b.addEventListener('click', function () { showTab(b.getAttribute('data-tab')); });
+  });
+
+  /* =========================================================
+     탭 1. 안내문
+  ========================================================= */
+  var GUIDE = {
+    vietnam: {
+      title: '베트남',
+      lines: [
+        '베트남은 관광 목적 45일까지 무비자 입국이 가능하며, 입국일 기준 여권 유효기간 6개월 이상이 필요합니다.',
+        '일부 공항은 사전입국신고(PAI) QR을 확인하니, 출발 3일 전까지 발급 방법을 안내드리겠습니다.'
+      ]
+    },
+    bali: {
+      title: '인도네시아(발리)',
+      lines: [
+        '인도네시아 입국 전 도착 3일 이내에 All Indonesia 입국신고(allindonesia.imigrasi.go.id)를 작성해 주세요. (무료)',
+        '발리 관광세 1인 150,000루피아는 Love Bali에서 미리 결제하시면 입국이 빠릅니다.',
+        '도착비자(e-VOA)는 500,000루피아이며, 출발 48시간 전까지 온라인 신청이 가능합니다.'
+      ]
+    },
+    japan: {
+      title: '일본',
+      lines: [
+        '출발 전 비짓재팬웹(Visit Japan Web)에 여권·입국 정보를 등록하시면 입국 심사가 빠릅니다.',
+        '일본은 입국 시 여권 유효기간이 남아 있으면 되지만, 6개월 이상을 권장합니다.'
+      ]
+    },
+    thailand: {
+      title: '태국',
+      lines: [
+        '태국은 도착 3일 전부터 태국 디지털 입국신고(TDAC, tdac.immigration.go.th)를 제출해야 합니다. (무료)',
+        '한국 여권은 비자 없이 90일까지 체류가 가능합니다.'
+      ]
+    },
+    europe: {
+      title: '유럽',
+      lines: [
+        '셴겐 지역은 180일 중 90일까지 무비자 체류가 가능하며, 여권 유효기간 6개월 이상을 권장합니다.',
+        '입국 사전허가(ETIAS) 시행 여부와 현지 규정은 출발 전에 다시 확인해 안내드리겠습니다.'
+      ]
+    }
+  };
+
+  function guideKey(dest) {
+    var d = String(dest || '').replace(/\s/g, '');
+    if (!d) return null;
+    if (/발리|인도네시아/.test(d)) return 'bali';
+    if (/다낭|나트랑|푸꾸옥|호이안|하노이|호치민|베트남|달랏/.test(d)) return 'vietnam';
+    if (/일본|도쿄|오사카|후쿠오카|삿포로|오키나와|규슈|간사이|교토|나고야/.test(d)) return 'japan';
+    if (/태국|방콕|푸켓|치앙마이|파타야|코사무이/.test(d)) return 'thailand';
+    if (/유럽|프랑스|이탈리아|스페인|독일|체코|오스트리아|스위스|영국|동유럽|북유럽|크로아티아|그리스/.test(d)) return 'europe';
+    return null;
+  }
+
+  var savedMsg = store.get('dt.msg.v1', {});
+  var msg = {
+    name: savedMsg.name || '',
+    dest: savedMsg.dest || '',
+    date: savedMsg.date || '',
+    dur: savedMsg.dur || '3박 5일',
+    adult: typeof savedMsg.adult === 'number' ? savedMsg.adult : 2,
+    child: typeof savedMsg.child === 'number' ? savedMsg.child : 0,
+    infant: typeof savedMsg.infant === 'number' ? savedMsg.infant : 0,
+    price: savedMsg.price || '',
+    mode: savedMsg.mode === 'total' ? 'total' : 'per',
+    points: Array.isArray(savedMsg.points) ? savedMsg.points.slice() : [],
+    link: savedMsg.link || '',
+    optPassport: savedMsg.optPassport !== false,
+    optEntry: savedMsg.optEntry !== false,
+    optSign: savedMsg.optSign !== false
+  };
+
+  var el = {
+    name: $('#mName'), dest: $('#mDest'), date: $('#mDate'), dur: $('#mDur'),
+    adult: $('#paxAdult'), child: $('#paxChild'), infant: $('#paxInfant'),
+    price: $('#mPrice'), priceLabel: $('#priceLabel'), priceHint: $('#priceHint'),
+    pointCustom: $('#mPointCustom'), link: $('#mLink'), linkStatus: $('#linkStatus'),
+    optPassport: $('#optPassport'), optEntry: $('#optEntry'), optSign: $('#optSign'),
+    preview: $('#msgPreview')
+  };
+
+  function saveMsg() { store.set('dt.msg.v1', msg); }
+
+  function normalizeLink(raw) {
+    var url = String(raw || '').trim();
+    if (!url) return '';
+    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    try {
+      var u = new URL(url);
+      u.searchParams.set('ptnCd', AGENT_CODE);
+      return u.toString();
+    } catch (e) {
+      if (/ptnCd=/i.test(url)) return url.replace(/ptnCd=[^&]*/i, 'ptnCd=' + AGENT_CODE);
+      return url + (url.indexOf('?') >= 0 ? '&' : '?') + 'ptnCd=' + AGENT_CODE;
+    }
+  }
+
+  function linkHasCode(raw) {
+    var s = String(raw || '');
+    return new RegExp('ptnCd=' + AGENT_CODE, 'i').test(s);
+  }
+
+  function paxText() {
+    var parts = [];
+    if (msg.adult > 0) parts.push('성인 ' + msg.adult + '명');
+    if (msg.child > 0) parts.push('아동 ' + msg.child + '명');
+    if (msg.infant > 0) parts.push('유아 ' + msg.infant + '명');
+    return parts.join(', ');
+  }
+  function paxHead() { return msg.adult + msg.child + msg.infant; }
+
+  function priceBlock() {
+    var p = num(msg.price);
+    var head = paxHead();
+    if (!p) return '';
+    if (msg.mode === 'per') {
+      var total = p * Math.max(head, 1);
+      var s = '1인 ' + won(p);
+      if (head > 1) s += ' · 총 ' + won(total) + ' (' + head + '명 기준)';
+      return s;
+    }
+    var per = head > 1 ? Math.round(p / head) : p;
+    var s2 = '총 ' + won(p);
+    if (head > 1) s2 += ' · 1인 ' + won(per);
+    return s2;
+  }
+
+  function buildMessage() {
+    var out = [];
+    var name = String(msg.name || '').trim();
+    var dest = String(msg.dest || '').trim();
+    var dur = String(msg.dur || '').trim();
+    var durInfo = parseDuration(dur);
+    var start = parseYmd(msg.date);
+
+    out.push(name ? '안녕하세요, ' + name + ' 님.' : '안녕하세요.');
+    out.push('델타투어 박주연 실장입니다.');
+    out.push('');
+
+    var subject = dest && dur ? dest + ' ' + dur : (dest || dur || '여행');
+    out.push('문의하신 ' + subject + ' 일정 안내드립니다.');
+    out.push('');
+
+    if (dest) out.push('· 여행지 : ' + dest);
+
+    if (start) {
+      var line = '· 일정 : ' + kDate(start);
+      if (durInfo && durInfo.days > 1) {
+        var end = addDays(start, durInfo.days - 1);
+        var sameYear = start.getFullYear() === end.getFullYear();
+        line += ' ~ ' + (sameYear ? '' : end.getFullYear() + '년 ') + (end.getMonth() + 1) + '월 ' + end.getDate() + '일(' + WD[end.getDay()] + ')';
+      }
+      if (dur) line += ' / ' + dur;
+      out.push(line);
+    } else if (dur) {
+      out.push('· 일정 : ' + dur);
+    }
+
+    var px = paxText();
+    if (px) out.push('· 인원 : ' + px);
+
+    var pr = priceBlock();
+    if (pr) out.push('· 요금 : ' + pr);
+
+    if (msg.points.length) out.push('· 상품 포인트 : ' + msg.points.join(', '));
+
+    if (msg.link && String(msg.link).trim()) {
+      out.push('');
+      out.push('상품 보기');
+      out.push(normalizeLink(msg.link));
+    }
+
+    var notes = [];
+    if (msg.optPassport) {
+      notes.push('여권 유효기간이 출발일 기준 6개월 이상 남아 있는지 꼭 확인해 주세요.');
+    }
+    if (msg.optEntry) {
+      var key = guideKey(dest);
+      if (key && GUIDE[key]) {
+        GUIDE[key].lines.forEach(function (l) { notes.push(l); });
+      } else if (dest) {
+        notes.push(dest + ' 입국 규정은 출발 전 최신 공지로 다시 확인해 안내드리겠습니다.');
+      }
+    }
+    if (notes.length) {
+      out.push('');
+      out.push('[확인해 주세요]');
+      notes.forEach(function (n) { out.push('· ' + n); });
+    }
+
+    out.push('');
+    out.push('예약과 문의는 아래 번호로 편하게 연락 주세요. 감사합니다.');
+    if (msg.optSign) {
+      out.push('');
+      out.push(SIGN);
+    }
+    return out.join('\n');
+  }
+
+  function renderPriceMeta() {
+    var p = num(msg.price);
+    var head = paxHead();
+    el.priceLabel.textContent = msg.mode === 'per' ? '1인 금액 (원)' : '총액 (원)';
+    if (!p) { el.priceHint.textContent = ''; return; }
+    if (msg.mode === 'per') {
+      el.priceHint.textContent = head > 1
+        ? '총 ' + won(p * head) + ' · ' + head + '명 기준'
+        : '1인 기준';
+    } else {
+      el.priceHint.textContent = head > 1
+        ? '1인 ' + won(Math.round(p / head)) + ' · ' + head + '명 기준'
+        : '총액 기준';
+    }
+  }
+
+  function renderLinkStatus() {
+    var raw = String(msg.link || '').trim();
+    if (!raw) {
+      el.linkStatus.innerHTML = '링크를 붙이면 대리점 코드(<b>' + AGENT_CODE + '</b>)를 확인해 드립니다.';
+      return;
+    }
+    if (!/^https?:\/\//i.test(raw) && raw.indexOf('.') < 0) {
+      el.linkStatus.textContent = '주소 형식이 아닌 것 같습니다. 하나허브 상품 주소를 붙여 주세요.';
+      return;
+    }
+    if (linkHasCode(raw)) {
+      el.linkStatus.innerHTML = '대리점 코드 <b>' + AGENT_CODE + '</b>가 확인됐습니다. 그대로 안내문에 들어갑니다.';
+    } else {
+      el.linkStatus.innerHTML = '대리점 코드가 없습니다. 안내문에는 <b>' + AGENT_CODE + '</b>를 붙여 넣습니다.';
+    }
+  }
+
+  function renderPreview() {
+    el.preview.textContent = buildMessage();
+  }
+
+  function renderAll() {
+    renderPriceMeta();
+    renderLinkStatus();
+    renderPreview();
+  }
+
+  function markChips(container, attr, values) {
+    $$('.chip', container).forEach(function (c) {
+      var v = c.getAttribute(attr);
+      c.classList.toggle('on', values.indexOf(v) >= 0);
+    });
+  }
+
+  // 입력값 → 상태 반영
+  function syncFromInputs() {
+    msg.name = el.name.value;
+    msg.dest = el.dest.value;
+    msg.date = el.date.value;
+    msg.dur = el.dur.value;
+    msg.adult = clampInt(el.adult.value, 0, 99);
+    msg.child = clampInt(el.child.value, 0, 99);
+    msg.infant = clampInt(el.infant.value, 0, 99);
+    msg.price = digits(el.price.value);
+    msg.link = el.link.value;
+    msg.optPassport = el.optPassport.checked;
+    msg.optEntry = el.optEntry.checked;
+    msg.optSign = el.optSign.checked;
+    saveMsg();
+    renderAll();
+  }
+
+  // 초기값 채우기
+  el.name.value = msg.name;
+  el.dest.value = msg.dest;
+  el.date.value = msg.date;
+  el.dur.value = msg.dur;
+  el.adult.value = msg.adult;
+  el.child.value = msg.child;
+  el.infant.value = msg.infant;
+  el.price.value = comma(msg.price);
+  el.link.value = msg.link;
+  el.optPassport.checked = msg.optPassport;
+  el.optEntry.checked = msg.optEntry;
+  el.optSign.checked = msg.optSign;
+  markChips($('#pointChips'), 'data-point', msg.points);
+  markChips($('#destChips'), 'data-dest', [msg.dest]);
+  markChips($('#durChips'), 'data-dur', [msg.dur]);
+  $$('#priceMode .chip, #priceMode button').forEach(function (b) {
+    if (b.getAttribute('data-mode') === msg.mode) b.classList.add('on');
+    else b.classList.remove('on');
+  });
+  renderAll();
+
+  ['input', 'change'].forEach(function (evt) {
+    ['name', 'dest', 'date', 'dur', 'link'].forEach(function (k) { el[k].addEventListener(evt, syncFromInputs); });
+    [el.optPassport, el.optEntry, el.optSign].forEach(function (i) { i.addEventListener('change', syncFromInputs); });
+  });
+
+  // 금액 입력: 콤마 자동
+  el.price.addEventListener('input', function () {
+    var pos = el.price.value.length - el.price.selectionStart;
+    el.price.value = comma(el.price.value);
+    try { el.price.setSelectionRange(el.price.value.length, el.price.value.length); } catch (e) {}
+    msg.price = digits(el.price.value);
+    msg.adult = clampInt(el.adult.value, 0, 99);
+    msg.child = clampInt(el.child.value, 0, 99);
+    msg.infant = clampInt(el.infant.value, 0, 99);
+    saveMsg();
+    renderAll();
+  });
+
+  // 인원 스텝퍼
+  $$('.stepper').forEach(function (st) {
+    var input = $('input', st);
+    $$('button', st).forEach(function (b) {
+      b.addEventListener('click', function () {
+        var d = parseInt(b.getAttribute('data-d'), 10) || 0;
+        input.value = clampInt(Number(digits(input.value)) + d, 0, 99);
+        syncFromInputs();
+      });
+    });
+    input.addEventListener('input', function () {
+      input.value = digits(input.value).slice(0, 2);
+      syncFromInputs();
+    });
+    input.addEventListener('blur', function () {
+      input.value = clampInt(input.value, 0, 99);
+      syncFromInputs();
+    });
+  });
+
+  // 여행지·일정 칩
+  $$('#destChips .chip').forEach(function (c) {
+    c.addEventListener('click', function () {
+      var v = c.getAttribute('data-dest');
+      el.dest.value = (el.dest.value === v) ? '' : v;
+      syncFromInputs();
+      markChips($('#destChips'), 'data-dest', [el.dest.value]);
+      $$('#destChips .chip').forEach(function (x) {
+        x.classList.toggle('on', x.getAttribute('data-dest') === el.dest.value);
+      });
+    });
+  });
+  $$('#durChips .chip').forEach(function (c) {
+    c.addEventListener('click', function () {
+      el.dur.value = c.getAttribute('data-dur');
+      syncFromInputs();
+      $$('#durChips .chip').forEach(function (x) {
+        x.classList.toggle('on', x.getAttribute('data-dur') === el.dur.value);
+      });
+    });
+  });
+  el.dur.addEventListener('input', function () {
+    $$('#durChips .chip').forEach(function (x) {
+      x.classList.toggle('on', x.getAttribute('data-dur') === el.dur.value);
+    });
+  });
+
+  // 요금 방식
+  $$('#priceMode button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      msg.mode = b.getAttribute('data-mode') === 'total' ? 'total' : 'per';
+      $$('#priceMode button').forEach(function (x) { x.classList.toggle('on', x === b); });
+      saveMsg();
+      renderAll();
+    });
+  });
+
+  // 포인트 태그
+  function togglePoint(v) {
+    var i = msg.points.indexOf(v);
+    if (i >= 0) msg.points.splice(i, 1); else msg.points.push(v);
+    saveMsg();
+    markChips($('#pointChips'), 'data-point', msg.points);
+    renderPreview();
+  }
+  function hasPointChip(v) {
+    return $$('#pointChips .chip').some(function (c) { return c.getAttribute('data-point') === v; });
+  }
+  function appendPointChip(v) {
+    if (hasPointChip(v)) return;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'chip on';
+    btn.setAttribute('data-point', v);
+    btn.textContent = v;
+    btn.addEventListener('click', function () { togglePoint(v); });
+    $('#pointChips').appendChild(btn);
+  }
+  // 지난번에 직접 추가한 포인트 복원
+  msg.points.forEach(function (v) { appendPointChip(v); });
+  markChips($('#pointChips'), 'data-point', msg.points);
+  $$('#pointChips .chip').forEach(function (c) {
+    c.addEventListener('click', function () { togglePoint(c.getAttribute('data-point')); });
+  });
+  $('#addPoint').addEventListener('click', function () {
+    var v = String(el.pointCustom.value || '').trim().slice(0, 24);
+    if (!v) { toast('추가할 포인트를 입력해 주세요'); return; }
+    if (msg.points.indexOf(v) >= 0) { toast('이미 들어 있는 포인트입니다'); return; }
+    msg.points.push(v);
+    appendPointChip(v);
+    el.pointCustom.value = '';
+    saveMsg();
+    renderPreview();
+  });
+  el.pointCustom.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); $('#addPoint').click(); }
+  });
+
+  bindCopy($('#copyMsg'), function () { return el.preview.textContent; });
+  bindCopy($('#copyMsgTop'), function () { return el.preview.textContent; });
+
+  /* =========================================================
+     탭 2. 계산기
+  ========================================================= */
+  $$('#calcSeg button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var target = b.getAttribute('data-calc');
+      $$('#calcSeg button').forEach(function (x) { x.classList.toggle('on', x === b); });
+      ['quote', 'settle', 'fx'].forEach(function (k) {
+        var panel = $('#calc-' + k);
+        if (panel) panel.style.display = (k === target) ? 'block' : 'none';
+      });
+    });
+  });
+
+  // ---- 견적 ----
+  var q = {
+    aPrice: $('#qaPrice'), aCount: $('#qaCount'),
+    cPrice: $('#qcPrice'), cCount: $('#qcCount'),
+    iPrice: $('#qiPrice'), iCount: $('#qiCount'),
+    extra: $('#qExtra'), discount: $('#qDiscount'),
+    head: $('#qHead'), extraOut: $('#qExtraOut'), discountOut: $('#qDiscountOut'),
+    total: $('#qTotal'), per: $('#qPer')
+  };
+  var quoteState = { total: 0, per: 0, head: 0 };
+  function moneyInput(input) {
+    input.addEventListener('input', function () {
+      input.value = comma(input.value);
+    });
+  }
+  [q.aPrice, q.cPrice, q.iPrice, q.extra, q.discount].forEach(moneyInput);
+  [q.aCount, q.cCount, q.iCount].forEach(function (i) {
+    i.addEventListener('input', function () { i.value = digits(i.value).slice(0, 3); });
+  });
+
+  function calcQuote() {
+    var ac = num(q.aCount.value), cc = num(q.cCount.value), ic = num(q.iCount.value);
+    var sub = num(q.aPrice.value) * ac + num(q.cPrice.value) * cc + num(q.iPrice.value) * ic;
+    var extra = num(q.extra.value), disc = num(q.discount.value);
+    var total = Math.max(0, sub + extra - disc);
+    var head = ac + cc + ic;
+    var per = head > 0 ? Math.round(total / head) : 0;
+    q.head.textContent = head + '명';
+    q.extraOut.textContent = won(extra);
+    q.discountOut.textContent = won(disc);
+    q.total.textContent = won(total);
+    q.per.textContent = won(per);
+    quoteState = { total: total, per: per, head: head, ac: ac, cc: cc, ic: ic, extra: extra, disc: disc };
+  }
+  [q.aPrice, q.aCount, q.cPrice, q.cCount, q.iPrice, q.iCount, q.extra, q.discount].forEach(function (i) {
+    i.addEventListener('input', calcQuote);
+  });
+  calcQuote();
+
+  $('#copyQuote').addEventListener('click', function () {
+    var s = quoteState;
+    if (!s.total) { toast('금액을 먼저 입력해 주세요'); return; }
+    var lines = ['[견적 요약]'];
+    if (s.ac > 0) lines.push('· 성인 ' + s.ac + '명 × ' + won(num(q.aPrice.value)) + ' = ' + won(num(q.aPrice.value) * s.ac));
+    if (s.cc > 0) lines.push('· 아동 ' + s.cc + '명 × ' + won(num(q.cPrice.value)) + ' = ' + won(num(q.cPrice.value) * s.cc));
+    if (s.ic > 0) lines.push('· 유아 ' + s.ic + '명 × ' + won(num(q.iPrice.value)) + ' = ' + won(num(q.iPrice.value) * s.ic));
+    if (s.extra > 0) lines.push('· 추가금 +' + won(s.extra));
+    if (s.disc > 0) lines.push('· 할인 -' + won(s.disc));
+    lines.push('· 총 합계 ' + won(s.total) + ' (' + s.head + '명 기준)');
+    lines.push('· 1인 평균 ' + won(s.per));
+    Promise.resolve(copyText(lines.join('\n'))).then(function (ok) {
+      toast(ok ? '견적 요약을 복사했습니다' : '복사하지 못했습니다');
+    });
+  });
+
+  // ---- 정산 ----
+  var commMode = 'rate';
+  $$('#commMode button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      commMode = b.getAttribute('data-cmode') === 'amount' ? 'amount' : 'rate';
+      $$('#commMode button').forEach(function (x) { x.classList.toggle('on', x === b); });
+      $('#sRate').style.display = commMode === 'rate' ? 'block' : 'none';
+      $('#sAmount').style.display = commMode === 'amount' ? 'block' : 'none';
+      calcSettle();
+    });
+  });
+
+  var s = {
+    total: $('#sTotal'), rate: $('#sRate'), amount: $('#sAmount'),
+    card: $('#sCard'), etc: $('#sEtc'),
+    comm: $('#sComm'), cardOut: $('#sCardOut'), etcOut: $('#sEtcOut'),
+    vat: $('#sVat'), net: $('#sNet'), netNoVat: $('#sNetNoVat')
+  };
+  [s.total, s.amount, s.etc].forEach(moneyInput);
+
+  function calcSettle() {
+    var total = num(s.total.value);
+    var comm = commMode === 'amount' ? num(s.amount.value) : Math.round(total * dec(s.rate.value) / 100);
+    var cardFee = Math.round(total * dec(s.card.value) / 100);
+    var etc = num(s.etc.value);
+    var vat = Math.round(comm * 0.1);
+    var netNoVat = comm - cardFee - etc;
+    var net = netNoVat - vat;
+    s.comm.textContent = won(comm);
+    s.cardOut.textContent = won(cardFee);
+    s.etcOut.textContent = won(etc);
+    s.vat.textContent = won(vat);
+    s.net.textContent = won(net);
+    s.netNoVat.textContent = won(netNoVat);
+  }
+  [s.total, s.rate, s.amount, s.card, s.etc].forEach(function (i) {
+    i.addEventListener('input', calcSettle);
+  });
+  calcSettle();
+
+  // ---- 환율 ----
+  var CUR = {
+    USD: { name: '달러', unit: 'USD', sym: '$', dec: 2, dflt: 1400 },
+    JPY: { name: '엔', unit: 'JPY', sym: '¥', dec: 2, dflt: 9.5 },
+    VND: { name: '동', unit: 'VND', sym: '₫', dec: 0, dflt: 0.055 },
+    THB: { name: '바트', unit: 'THB', sym: '฿', dec: 2, dflt: 42 }
+  };
+  var savedRates = store.get('dt.rates.v1', {});
+  var rates = {};
+  Object.keys(CUR).forEach(function (k) {
+    var v = parseFloat(savedRates[k]);
+    rates[k] = (isFinite(v) && v > 0) ? v : CUR[k].dflt;
+  });
+  var cur = 'USD';
+
+  var fx = {
+    chips: $('#fxChips'), unit: $('#fxUnit'), rate: $('#fxRate'),
+    krw: $('#fxKrw'), krwEq: $('#fxKrwEq'), forEl: $('#fxFor'), forLabel: $('#fxForLabel'),
+    forEq: $('#fxForEq'),
+    rateUSD: $('#rateUSD'), rateJPY: $('#rateJPY'), rateVND: $('#rateVND'), rateTHB: $('#rateTHB')
+  };
+
+  function fmtFor(n) {
+    var d = CUR[cur].dec;
+    return Number(n).toLocaleString('ko-KR', { maximumFractionDigits: d, minimumFractionDigits: 0 });
+  }
+
+  function renderFxChrome() {
+    var c = CUR[cur];
+    fx.unit.textContent = c.unit;
+    fx.forLabel.textContent = c.name + ' (' + c.unit + ')';
+    fx.rate.value = String(rates[cur]);
+    $$('#fxChips .chip').forEach(function (b) {
+      b.classList.toggle('on', b.getAttribute('data-cur') === cur);
+    });
+  }
+
+  function updateFx(from) {
+    var r = rates[cur];
+    if (!(r > 0)) r = CUR[cur].dflt;
+    if (from === 'krw') {
+      var krw = num(fx.krw.value);
+      fx.krw.value = comma(fx.krw.value);
+      var f = krw / r;
+      fx.forEl.value = krw ? fmtFor(f) : '';
+      fx.krwEq.textContent = '';
+      fx.forEq.textContent = krw ? '≈ ' + fmtFor(f) + ' ' + CUR[cur].unit : '';
+    } else if (from === 'for') {
+      var fv = dec(fx.forEl.value);
+      var k = Math.round(fv * r);
+      fx.krw.value = fv ? fmt(k) : '';
+      fx.forEq.textContent = '';
+      fx.krwEq.textContent = fv ? '≈ ' + won(k) : '';
+    } else {
+      var krw2 = num(fx.krw.value);
+      var f2 = krw2 / r;
+      if (krw2) fx.forEl.value = fmtFor(f2); else fx.forEl.value = '';
+      fx.forEq.textContent = krw2 ? '≈ ' + fmtFor(f2) + ' ' + CUR[cur].unit : '';
+      fx.krwEq.textContent = '';
+    }
+  }
+
+  $$('#fxChips .chip').forEach(function (b) {
+    b.addEventListener('click', function () {
+      cur = b.getAttribute('data-cur');
+      renderFxChrome();
+      fx.krw.value = '';
+      fx.forEl.value = '';
+      fx.krwEq.textContent = '';
+      fx.forEq.textContent = '';
+    });
+  });
+
+  [fx.krw, fx.forEl].forEach(function (i) {
+    i.addEventListener('input', function () {
+      if (i === fx.krw) {
+        fx.krw.value = String(fx.krw.value).replace(/[^0-9]/g, '');
+        fx.krw.value = comma(fx.krw.value);
+        updateFx('krw');
+      } else {
+        fx.forEl.value = String(fx.forEl.value).replace(/[^0-9.]/g, '');
+        updateFx('for');
+      }
+    });
+  });
+
+  fx.rate.addEventListener('input', function () {
+    var v = dec(fx.rate.value);
+    if (v > 0) {
+      rates[cur] = v;
+      store.set('dt.rates.v1', rates);
+      updateFx('krw');
+      renderRateInputs();
+      calcTip();
+    }
+  });
+
+  function renderRateInputs() {
+    fx.rateUSD.value = String(rates.USD);
+    fx.rateJPY.value = String(rates.JPY);
+    fx.rateVND.value = String(rates.VND);
+    fx.rateTHB.value = String(rates.THB);
+  }
+  [['USD', fx.rateUSD], ['JPY', fx.rateJPY], ['VND', fx.rateVND], ['THB', fx.rateTHB]].forEach(function (pair) {
+    var k = pair[0], input = pair[1];
+    input.addEventListener('input', function () {
+      var v = dec(input.value);
+      if (v > 0) {
+        rates[k] = v;
+        store.set('dt.rates.v1', rates);
+        if (k === cur) fx.rate.value = String(v);
+        updateFx('krw');
+        calcTip();
+      }
+    });
+  });
+
+  var tip = { usd: $('#tipUsd'), count: $('#tipCount'), total: $('#tipTotal'), krw: $('#tipKrw') };
+  function calcTip() {
+    var usd = dec(tip.usd.value);
+    var cnt = num(tip.count.value);
+    var amount = usd * cnt;
+    tip.total.textContent = fmtFor2(amount) + ' USD';
+    tip.krw.textContent = won(Math.round(amount * rates.USD));
+  }
+  function fmtFor2(n) {
+    return Number(n).toLocaleString('ko-KR', { maximumFractionDigits: 2, minimumFractionDigits: 0 });
+  }
+  [tip.usd, tip.count].forEach(function (i) {
+    i.addEventListener('input', function () {
+      tip.count.value = digits(tip.count.value);
+      calcTip();
+    });
+  });
+
+  renderFxChrome();
+  renderRateInputs();
+  calcTip();
+
+  /* =========================================================
+     탭 3. 출발체크
+  ========================================================= */
+  var CHECKS = [
+    { key: 'passport', label: '여권(6개월↑)' },
+    { key: 'deposit', label: '예약금' },
+    { key: 'balance', label: '잔금' },
+    { key: 'visa', label: '비자·입국신고' },
+    { key: 'ticket', label: '이티켓·확정서' }
+  ];
+  var trips = store.get('dt.trips.v1', []);
+  if (!Array.isArray(trips)) trips = [];
+
+  var t = {
+    name: $('#tName'), dest: $('#tDest'), date: $('#tDate'), pax: $('#tPax'), memo: $('#tMemo')
+  };
+  var editingId = null;
+  var listEl = $('#tripList');
+
+  function saveTrips() { store.set('dt.trips.v1', trips); }
+
+  function ddayInfo(dateStr) {
+    var d = parseYmd(dateStr);
+    if (!d) return { text: '출발일 미정', cls: 'past', diff: null };
+    var diff = diffDays(todayYmd(), d);
+    if (diff === 0) return { text: 'D-DAY', cls: 'today', diff: diff };
+    if (diff > 0) return { text: 'D-' + diff, cls: diff <= 3 ? 'soon' : '', diff: diff };
+    return { text: 'D+' + (-diff), cls: 'past', diff: diff };
+  }
+
+  function sortTrips(list) {
+    return list.slice().sort(function (a, b) {
+      var da = parseYmd(a.date), db = parseYmd(b.date);
+      var va = da ? diffDays(todayYmd(), da) : 99999;
+      var vb = db ? diffDays(todayYmd(), db) : 99999;
+      var ka = va >= 0 ? va : 100000 + (-va);
+      var kb = vb >= 0 ? vb : 100000 + (-vb);
+      return ka - kb;
+    });
+  }
+
+  function tripCard(tr) {
+    var dd = ddayInfo(tr.date);
+    var done = CHECKS.filter(function (c) { return tr.checks && tr.checks[c.key]; }).length;
+    var pct = Math.round(done / CHECKS.length * 100);
+    var d = parseYmd(tr.date);
+    var subParts = [];
+    if (tr.dest) subParts.push(esc(tr.dest));
+    if (d) subParts.push(dotDate(d));
+    if (tr.pax) subParts.push(esc(tr.pax));
+    var checksHtml = CHECKS.map(function (c) {
+      var on = !!(tr.checks && tr.checks[c.key]);
+      return '<button type="button" class="check' + (on ? ' on' : '') + '" data-act="check" data-key="' + c.key + '" data-id="' + esc(tr.id) + '" role="checkbox" aria-checked="' + (on ? 'true' : 'false') + '">' +
+        '<span class="box"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5 11-11"/></svg></span>' +
+        '<span class="lbl">' + esc(c.label) + '</span>' +
+        '</button>';
+    }).join('');
+
+    return '<article class="trip" data-id="' + esc(tr.id) + '">' +
+      '<div class="trip-head">' +
+        '<div>' +
+          '<p class="trip-name">' + esc(tr.name || '고객') + '</p>' +
+          '<p class="trip-sub">' + (subParts.length ? subParts.join(' · ') : '일정 미정') + '</p>' +
+        '</div>' +
+        '<span class="dday ' + dd.cls + '">' + dd.text + '</span>' +
+      '</div>' +
+      '<div class="prog"><div class="prog-bar" style="width:' + pct + '%"></div></div>' +
+      '<p class="prog-txt">체크 ' + done + '/' + CHECKS.length + '</p>' +
+      '<div class="checks">' + checksHtml + '</div>' +
+      (tr.memo ? '<p class="trip-memo">' + esc(tr.memo) + '</p>' : '') +
+      '<div class="trip-actions">' +
+        '<button type="button" data-act="edit" data-id="' + esc(tr.id) + '">수정</button>' +
+        '<button type="button" class="del" data-act="del" data-id="' + esc(tr.id) + '">삭제</button>' +
+      '</div>' +
+    '</article>';
+  }
+
+  function renderTrips() {
+    if (!trips.length) {
+      listEl.innerHTML = '<div class="empty">아직 등록한 손님이 없습니다.<br>위에서 손님을 추가하면 출발일 순서로 정리됩니다.</div>';
+      return;
+    }
+    listEl.innerHTML = sortTrips(trips).map(tripCard).join('');
+  }
+
+  function findTrip(id) {
+    for (var i = 0; i < trips.length; i++) if (trips[i].id === id) return trips[i];
+    return null;
+  }
+
+  function resetTripForm() {
+    editingId = null;
+    t.name.value = '';
+    t.dest.value = '';
+    t.date.value = '';
+    t.pax.value = '';
+    t.memo.value = '';
+    $('#tripFormTitle').textContent = '손님 추가';
+    $('#tripSave').textContent = '출발체크에 추가';
+    $('#tripEditActions').style.display = 'none';
+  }
+
+  $('#tripSave').addEventListener('click', function () {
+    var name = String(t.name.value || '').trim();
+    if (!name) { toast('고객명을 입력해 주세요'); t.name.focus(); return; }
+    var dateVal = t.date.value || '';
+    if (!dateVal) { toast('출발일을 입력해 주세요'); t.date.focus(); return; }
+
+    if (editingId) {
+      var tr = findTrip(editingId);
+      if (tr) {
+        tr.name = name;
+        tr.dest = String(t.dest.value || '').trim();
+        tr.date = dateVal;
+        tr.pax = String(t.pax.value || '').trim();
+        tr.memo = String(t.memo.value || '').trim();
+      }
+      saveTrips();
+      renderTrips();
+      resetTripForm();
+      toast('수정했습니다');
+    } else {
+      var checks = {};
+      CHECKS.forEach(function (c) { checks[c.key] = false; });
+      trips.push({
+        id: 't' + Date.now() + Math.floor(Math.random() * 1000),
+        name: name,
+        dest: String(t.dest.value || '').trim(),
+        date: dateVal,
+        pax: String(t.pax.value || '').trim(),
+        memo: String(t.memo.value || '').trim(),
+        checks: checks,
+        created: new Date().toISOString()
+      });
+      saveTrips();
+      renderTrips();
+      resetTripForm();
+      toast('출발체크에 추가했습니다');
+    }
+  });
+
+  $('#tripCancel').addEventListener('click', function () { resetTripForm(); });
+
+  listEl.addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('[data-act]') : null;
+    if (!btn) return;
+    var act = btn.getAttribute('data-act');
+    var id = btn.getAttribute('data-id');
+    var tr = findTrip(id);
+    if (!tr) return;
+
+    if (act === 'check') {
+      var key = btn.getAttribute('data-key');
+      if (!tr.checks) tr.checks = {};
+      tr.checks[key] = !tr.checks[key];
+      saveTrips();
+      renderTrips();
+      return;
+    }
+    if (act === 'edit') {
+      editingId = tr.id;
+      t.name.value = tr.name || '';
+      t.dest.value = tr.dest || '';
+      t.date.value = tr.date || '';
+      t.pax.value = tr.pax || '';
+      t.memo.value = tr.memo || '';
+      $('#tripFormTitle').textContent = '손님 정보 수정';
+      $('#tripSave').textContent = '수정 저장';
+      $('#tripEditActions').style.display = 'flex';
+      var formCard = t.name.closest('.card');
+      if (formCard) formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      t.name.focus();
+      return;
+    }
+    if (act === 'del') {
+      var ok = window.confirm('"' + (tr.name || '고객') + '" 님의 출발체크를 삭제할까요?\n체크한 내용도 함께 지워집니다.');
+      if (!ok) return;
+      trips = trips.filter(function (x) { return x.id !== id; });
+      saveTrips();
+      renderTrips();
+      if (editingId === id) resetTripForm();
+      toast('삭제했습니다');
+    }
+  });
+
+  renderTrips();
+
+  /* =========================================================
+     시작
+  ========================================================= */
+  var validTabs = ['msg', 'calc', 'check'];
+  var hashTab = String(location.hash || '').replace('#', '');
+  var startTab = validTabs.indexOf(hashTab) >= 0 ? hashTab : (validTabs.indexOf(lastTab) >= 0 ? lastTab : 'msg');
+  showTab(startTab);
+  window.addEventListener('hashchange', function () {
+    var h = String(location.hash || '').replace('#', '');
+    if (validTabs.indexOf(h) >= 0) showTab(h);
+  });
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('./sw.js').catch(function () {});
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+{
+  "name": "델타투어 실무 보조",
+  "short_name": "델타투어",
+  "description": "델타투어(하나투어 공식인증 대리점) 실무 보조 — 카톡 안내문, 여행사 계산기, 출발 체크",
+  "lang": "ko-KR",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#FAF8F5",
+  "theme_color": "#1B2A4A",
+  "categories": ["business", "productivity", "travel"],
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    { "name": "안내문", "url": "./#msg" },
+    { "name": "계산기", "url": "./#calc" },
+    { "name": "출발체크", "url": "./#check" }
+  ]
+}
