@@ -90,7 +90,6 @@ input[type=text],input[type=url],input[type=date],input[type=number],textarea{
   width:100%;min-height:48px;padding:12px 14px;
   font-size:16px;color:var(--navy);background:#fff;
   border:1px solid var(--line);border-radius:12px;outline:none;
-  -webkit-appearance:none;appearance:none;
 }
 textarea{min-height:76px;resize:vertical;line-height:1.55}
 input:focus,textarea:focus{border-color:var(--navy-soft);box-shadow:0 0 0 3px rgba(27,42,74,.07)}
@@ -218,8 +217,7 @@ details.rate-settings summary{
   display:flex;align-items:center;gap:6px;
 }
 details.rate-settings summary::-webkit-details-marker{display:none}
-details.rate-settings summary::before{content:"＋";color:var(--muted-2);font-size:13px}
-details.rate-settings[open] summary::before{content:"−"}
+.mk{color:var(--muted-2);font-size:14px;line-height:1;display:inline-block;width:12px;text-align:center}
 .rate-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
 .rate-grid .field{margin-bottom:0}
 .rate-grid input{min-height:44px}
@@ -601,7 +599,7 @@ details.rate-settings[open] summary::before{content:"−"}
         </div>
 
         <details class="rate-settings">
-          <summary>환율 직접 수정 (참고 환율)</summary>
+          <summary><span class="mk" aria-hidden="true">＋</span>환율 직접 수정 (참고 환율)</summary>
           <div class="rate-grid">
             <div class="field"><label for="rateUSD">USD (1달러)</label><input type="text" id="rateUSD" inputmode="decimal"></div>
             <div class="field"><label for="rateJPY">JPY (1엔)</label><input type="text" id="rateJPY" inputmode="decimal"></div>
@@ -672,7 +670,7 @@ details.rate-settings[open] summary::before{content:"−"}
 </main>
 
 <nav class="tabbar" aria-label="주요 메뉴">
-  <button type="button" class="tab on" data-tab="msg" aria-current="page">
+  <button type="button" class="tab on" data-tab="msg" aria-label="안내문" aria-current="page">
     <span class="ic">
       <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-3.3-.6L3 21l1.6-4.7A8.3 8.3 0 0 1 3.6 11.5 8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/>
@@ -680,7 +678,7 @@ details.rate-settings[open] summary::before{content:"−"}
     </span>
     안내문
   </button>
-  <button type="button" class="tab" data-tab="calc">
+  <button type="button" class="tab" data-tab="calc" aria-label="계산기">
     <span class="ic">
       <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <rect x="4.5" y="2.5" width="15" height="19" rx="2.6"/>
@@ -689,7 +687,7 @@ details.rate-settings[open] summary::before{content:"−"}
     </span>
     계산기
   </button>
-  <button type="button" class="tab" data-tab="check">
+  <button type="button" class="tab" data-tab="check" aria-label="출발체크">
     <span class="ic">
       <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M9 3.5h6a1.5 1.5 0 0 1 1.5 1.5v1h1.2A2.3 2.3 0 0 1 20 8.3v11.2A1.5 1.5 0 0 1 18.5 21h-13A1.5 1.5 0 0 1 4 19.5V8.3a2.3 2.3 0 0 1 2.3-2.3h1.2V5A1.5 1.5 0 0 1 9 3.5Z"/>
