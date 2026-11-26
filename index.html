@@ -39,6 +39,7 @@ body{
 button{font-family:inherit;cursor:pointer}
 input,textarea,select{font-family:inherit}
 h1,h2,h3,h4,p{margin:0}
+[hidden]{display:none!important}
 
 /* top bar */
 .topbar{
@@ -372,7 +373,7 @@ details.tool .tool-body{padding-top:10px}
       <p class="sec-sub">손님 문의를 적어 두고, 진행이면 4섹션으로 · 미진행이면 5섹션으로 넘깁니다.</p>
     </div>
 
-    <form class="card" id="qForm" autocomplete="off">
+    <form class="card" id="qForm" autocomplete="off" novalidate>
       <div class="field">
         <label for="qName">이름</label>
         <input type="text" id="qName" placeholder="김진희">

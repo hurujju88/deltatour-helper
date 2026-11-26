@@ -239,7 +239,7 @@
     $('#qCount').textContent = DB.inquiries.length;
     var dot = $('#dot1');
     if (DB.inquiries.length) { dot.textContent = DB.inquiries.length > 9 ? '9+' : DB.inquiries.length; dot.hidden = false; }
-    else dot.hidden = true;
+    else { dot.textContent = ''; dot.hidden = true; }
 
     if (!DB.inquiries.length) {
       list.innerHTML = '<div class="empty"><b>대기 중인 문의가 없습니다</b>손님 문의를 위에 적어 두면 여기에 쌓입니다.</div>';
@@ -389,7 +389,7 @@
     $('#jobCount').textContent = DB.jobs.length;
     var dot = $('#dot4');
     if (DB.jobs.length) { dot.textContent = DB.jobs.length > 9 ? '9+' : DB.jobs.length; dot.hidden = false; }
-    else dot.hidden = true;
+    else { dot.textContent = ''; dot.hidden = true; }
 
     if (!DB.jobs.length) {
       list.innerHTML = '<div class="empty"><b>진행 중인 건이 없습니다</b>1섹션에서 ‘진행’을 누르면 이곳으로 들어옵니다.</div>';
