@@ -445,7 +445,7 @@
       return '' +
         '<div class="check" data-k="' + c.k + '">' +
           '<div class="check-row">' +
-            '<button type="button" class="check-box ' + (s.done ? 'on' : '') + '" data-act="toggle" aria-pressed="' + (s.done ? 'true' : 'false') + '">' + (s.done ? '✓' : '') + '</button>' +
+            '<button type="button" class="check-box ' + (s.done ? 'on' : '') + '" data-act="toggle" aria-pressed="' + (s.done ? 'true' : 'false') + '" aria-label="' + esc(c.label) + ' 체크">' + (s.done ? '\u2713' : '') + '</button>' +
             '<span class="check-label ' + (s.done ? 'done' : '') + '" data-act="toggle">' + esc(c.label) + '</span>' +
             '<span class="check-date">' + (s.date ? esc(s.date.replace(/-/g, '.')) : '') + '</span>' +
             '<button type="button" class="check-memo-btn ' + (s.memo ? 'has' : '') + '" data-act="memo">' + (s.memo ? '메모' : '＋') + '</button>' +
@@ -516,7 +516,14 @@
       $('#commValue').placeholder = ct.value === 'amt' ? '예: 150000' : '예: 8';
     });
     var cv = $('#commValue');
-    if (cv) cv.addEventListener('input', function () { job.commissionValue = cv.value.trim(); saveJob(job); });
+    if (cv) cv.addEventListener('input', function () {
+      var v = cv.value;
+      if (job.commissionType === 'amt') {
+        var d = v.replace(/[^0-9]/g, '');
+        if (d) { v = Number(d).toLocaleString('ko-KR'); cv.value = v; }
+      }
+      job.commissionValue = v.trim(); saveJob(job);
+    });
     var cm = $('#commMemo');
     if (cm) cm.addEventListener('input', function () { job.commissionMemo = cm.value; saveJob(job); });
 
@@ -666,7 +673,7 @@
                 '<h3 class="item-title">' + esc(jobTitle(a)) +
                   '<span class="tag ' + (a.result === 'done' ? 'ok' : 'alert') + '">' + (a.result === 'done' ? '완료' : '취소') + '</span></h3>' +
                 '<p class="item-meta">' + esc([a.bookingCode ? '예약 ' + a.bookingCode : '', a.productCode ? '상품 ' + a.productCode : '', dotYmd(ymd(new Date(a.archivedAt)))].filter(Boolean).join(' · ')) + '</p>' +
-                '<p class="prog-txt" style="margin-top:6px">체크 ' + done + '/' + CHECKLIST.length + (a.commissionValue ? ' · 커미션 ' + esc(a.commissionValue) + (a.commissionType === 'pct' ? '%' : '원') : '') + '</p>' +
+                '<p class="prog-txt" style="margin-top:6px">체크 ' + done + '/' + CHECKLIST.length + (a.commissionValue ? ' · 커미션 ' + esc(a.commissionType === 'amt' ? P.fmt(a.commissionValue) + '원' : a.commissionValue + '%') : '') + '</p>' +
               '</div>' +
               '<span class="dday' + soon + '">D-' + left + ' 남음</span>' +
             '</div>' +
@@ -1038,6 +1045,8 @@
       var el = $('#' + QFIELDS[k]);
       if (el && document.activeElement !== el) el.value = Q[k] || '';
     });
+    var u = $('#fUrl');
+    if (u && document.activeElement !== u) u.value = Q.url || '';
     renderQuoteOut();
   }
 
@@ -1069,6 +1078,25 @@
   $('#btnCopyQuote').addEventListener('click', function () {
     copyWithToast(P.buildQuote(Q), '견적서 복사 완료 — 카톡에 붙여넣으세요');
   });
+
+  var fUrlEl = $('#fUrl');
+  if (fUrlEl) {
+    fUrlEl.addEventListener('input', function () {
+      Q.url = fUrlEl.value.trim();
+      renderQuoteOut();
+    });
+    fUrlEl.addEventListener('blur', function () {
+      var raw = fUrlEl.value.trim();
+      if (!raw) { Q.url = ''; renderQuoteOut(); return; }
+      var r = P.resolveInput(raw);
+      if (r) {
+        Q.url = r.url;
+        if (r.code) Q.code = r.code;
+        fUrlEl.value = r.url;
+      }
+      renderQuoteOut();
+    });
+  }
 
   function setStatus(kind, msg) {
     var el = $('#readStatus');

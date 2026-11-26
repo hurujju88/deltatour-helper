@@ -248,10 +248,11 @@ details.tool .tool-body{padding-top:10px}
 }
 .detail-title{font-size:19px;font-weight:800;letter-spacing:-0.02em;margin-bottom:3px}
 .detail-sub{font-size:12.5px;color:var(--muted-2);margin-bottom:14px}
-.codes{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.codes{display:grid;grid-template-columns:1fr;gap:10px}
 .codes .field{margin-bottom:0}
 .codes input{min-height:44px;font-size:14.5px;letter-spacing:.01em;font-weight:700}
-.comm{display:grid;grid-template-columns:96px 1fr;gap:8px;margin-top:10px}
+.comm{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}
+.comm select{min-height:44px;width:100%;border:1px solid var(--line);border-radius:12px;padding:0 12px;font-size:14px;background:#fff;color:var(--navy)}
 .comm input,.comm textarea{min-height:44px;font-size:14.5px}
 .checks{display:block;margin-top:4px}
 .check{
@@ -464,15 +465,13 @@ details.tool .tool-body{padding-top:10px}
           <input type="text" id="fChild" inputmode="numeric" placeholder="761,500">
         </div>
       </div>
-      <div class="mini-grid" style="margin-bottom:13px">
-        <div class="field">
-          <label for="fDep">출발</label>
-          <input type="text" id="fDep" placeholder="2027.02.15(월) 20:00">
-        </div>
-        <div class="field">
-          <label for="fArr">도착</label>
-          <input type="text" id="fArr" placeholder="2027.02.19(금) 07:25">
-        </div>
+      <div class="field">
+        <label for="fDep">출발</label>
+        <input type="text" id="fDep" placeholder="2027.02.15(월) 20:00">
+      </div>
+      <div class="field">
+        <label for="fArr">도착</label>
+        <input type="text" id="fArr" placeholder="2027.02.19(금) 07:25">
       </div>
       <div class="mini-grid field">
         <div class="field">
@@ -495,6 +494,11 @@ details.tool .tool-body{padding-top:10px}
       <div class="field">
         <label for="fNote2">안내 문구 2</label>
         <input type="text" id="fNote2" placeholder="현지 가이드·기사 경비 USD 40 별도">
+      </div>
+      <div class="field">
+        <label for="fUrl">상품 링크 (일정표 보기)</label>
+        <input type="text" id="fUrl" inputmode="url" placeholder="https://www.hanatour.com/...pkgCd=..." autocomplete="off">
+        <p class="hint">링크를 넣으면 대리점 코드(<b>PH05438</b>)가 자동으로 붙고, 상품코드도 읽어 갑니다.</p>
       </div>
     </div>
 
