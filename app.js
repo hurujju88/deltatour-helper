@@ -10,6 +10,7 @@
   var WD = ['일', '월', '화', '수', '목', '금', '토'];
   var DAY = 86400000;
   var ARCHIVE_DAYS = 30;
+  var KEEP_DAYS = 3;
 
   function esc(s) {
     return String(s == null ? '' : s)
@@ -26,6 +27,23 @@
     return m[1] + '.' + m[2] + '.' + m[3] + '(' + WD[d.getDay()] + ')';
   }
   function today() { var d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+  function dateFrom(s) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || ''));
+    if (!m) return null;
+    return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  }
+  function mdd(s) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || ''));
+    return m ? m[2] + '.' + m[3] : '';
+  }
+  function md(d) { return (d.getMonth() + 1) + '.' + pad2(d.getDate()); }
+  function mdSmart(d) { return (d.getFullYear() !== today().getFullYear() ? d.getFullYear() + '.' : '') + md(d); }
+  /* 도착일 + 3일까지는 진행건에 유지 (도착일이 없으면 계속 유지) */
+  function keepUntil(arr) {
+    var d = dateFrom(arr);
+    if (!d) return null;
+    return new Date(d.getTime() + KEEP_DAYS * DAY);
+  }
 
   /* ================= storage ================= */
   var mem = {};
@@ -155,6 +173,25 @@
   /* ================= 1섹션 · 문의 ================= */
   var qType = '패키지';
   var editingId = null;
+  var editingPaxLegacy = '';
+
+  /* 인원 — 성인·아동·유아 숫자 칸을 ‘성인 2 · 아동 1’ 로 조합 */
+  function paxFromInputs() {
+    var out = [];
+    [['성인', 'qPaxAdult'], ['아동', 'qPaxChild'], ['유아', 'qPaxInfant']].forEach(function (p) {
+      var el = $('#' + p[1]);
+      var v = el ? String(el.value).replace(/[^0-9]/g, '') : '';
+      if (v && Number(v) > 0) out.push(p[0] + ' ' + Number(v));
+    });
+    return out.join(' · ');
+  }
+  function parsePax(s) {
+    s = String(s || '');
+    function num(re) { var m = re.exec(s); return m ? String(Number(m[1])) : ''; }
+    return {
+      adult: num(/성인\s*(\d+)/), child: num(/아동\s*(\d+)/), infant: num(/유아\s*(\d+)/)
+    };
+  }
 
   $('#qType').addEventListener('click', function (e) {
     var b = e.target.closest('.chip');
@@ -163,9 +200,23 @@
     $$('#qType .chip').forEach(function (c) { c.classList.toggle('on', c === b); });
   });
 
+  ['qPaxAdult', 'qPaxChild', 'qPaxInfant'].forEach(function (id) {
+    var el = $('#' + id);
+    if (!el) return;
+    el.addEventListener('input', function () {
+      var v = el.value.replace(/[^0-9]/g, '');
+      if (v !== el.value) el.value = v;
+      editingPaxLegacy = '';
+      $('#qPaxOld').hidden = true;
+    });
+  });
+
   function resetForm() {
     editingId = null;
-    ['qName', 'qPhone', 'qDate', 'qPax', 'qDest', 'qReq'].forEach(function (id) { $('#' + id).value = ''; });
+    editingPaxLegacy = '';
+    ['qName', 'qPhone', 'qDate', 'qArr', 'qPaxAdult', 'qPaxChild', 'qPaxInfant', 'qDest', 'qReq'].forEach(function (id) { $('#' + id).value = ''; });
+    $('#qPaxOld').hidden = true;
+    $('#qPaxOld').innerHTML = '';
     qType = '패키지';
     $$('#qType .chip').forEach(function (c) { c.classList.toggle('on', c.getAttribute('data-v') === '패키지'); });
     $('#qSave').textContent = '문의 저장';
@@ -179,8 +230,10 @@
     var name = $('#qName').value.trim();
     var phone = $('#qPhone').value.trim();
     var date = $('#qDate').value;
+    var arr = $('#qArr').value;
     var dest = $('#qDest').value.trim();
-    var pax = $('#qPax').value.trim();
+    var paxRaw = paxFromInputs();
+    var pax = (paxRaw || editingPaxLegacy || '').trim();
     var req = $('#qReq').value.trim();
 
     if (!name && !phone) { toast('이름이나 전화번호를 넣어 주세요'); $('#qName').focus(); return; }
@@ -190,7 +243,7 @@
       var it = DB.inquiries.filter(function (x) { return x.id === editingId; })[0];
       if (it) {
         it.name = name; it.phone = phone; it.date = date; it.dest = dest; it.pax = pax;
-        it.type = qType; it.req = req; it.updatedAt = Date.now();
+        it.type = qType; it.req = req; it.arr = arr; it.updatedAt = Date.now();
         saveInq();
         toast('문의를 수정했습니다');
       }
@@ -200,7 +253,7 @@
     }
 
     DB.inquiries.unshift({
-      id: uid(), name: name, phone: phone, date: date, dest: dest, pax: pax,
+      id: uid(), name: name, phone: phone, date: date, arr: arr, dest: dest, pax: pax,
       type: qType, req: req, createdAt: Date.now(), updatedAt: Date.now()
     });
     saveInq();
@@ -213,7 +266,8 @@
   function inquiryCard(it) {
     var meta = [];
     if (it.dest) meta.push(it.dest);
-    if (it.date) meta.push(dotYmd(it.date));
+    if (it.date) meta.push('출발 ' + dotYmd(it.date));
+    if (it.arr) meta.push('도착 ' + dotYmd(it.arr));
     if (it.pax) meta.push(it.pax);
     return '' +
       '<article class="item" data-id="' + it.id + '">' +
@@ -262,7 +316,14 @@
       $('#qName').value = it.name || '';
       $('#qPhone').value = it.phone || '';
       $('#qDate').value = it.date || '';
-      $('#qPax').value = it.pax || '';
+      $('#qArr').value = it.arr || '';
+      var px = parsePax(it.pax);
+      $('#qPaxAdult').value = px.adult;
+      $('#qPaxChild').value = px.child;
+      $('#qPaxInfant').value = px.infant;
+      editingPaxLegacy = (it.pax && !px.adult && !px.child && !px.infant) ? it.pax : '';
+      $('#qPaxOld').hidden = !editingPaxLegacy;
+      $('#qPaxOld').innerHTML = editingPaxLegacy ? '기존 인원 표기: <b>' + esc(editingPaxLegacy) + '</b> — 위 칸에 숫자를 넣으면 새 표기로 저장됩니다.' : '';
       $('#qDest').value = it.dest || '';
       $('#qReq').value = it.req || '';
       qType = it.type || '기타';
@@ -308,7 +369,7 @@
     DB.jobs.unshift({
       id: uid(),
       name: it.name || '', phone: it.phone || '', dest: it.dest || '',
-      date: it.date || '', pax: it.pax || '', type: it.type || '',
+      date: it.date || '', arr: it.arr || '', pax: it.pax || '', type: it.type || '',
       req: it.req || '',
       productCode: product || '', bookingCode: booking || '',
       commissionType: 'pct', commissionValue: '', commissionMemo: '',
@@ -354,7 +415,7 @@
     DB.arc.unshift({
       id: uid(), kind: 'inquiry', result: 'lost',
       name: it.name || '', phone: it.phone || '', dest: it.dest || '',
-      date: it.date || '', pax: it.pax || '', type: it.type || '',
+      date: it.date || '', arr: it.arr || '', pax: it.pax || '', type: it.type || '',
       memo: memo || '', req: it.req || '',
       archivedAt: Date.now()
     });
@@ -365,9 +426,11 @@
   }
 
   /* ================= 4섹션 · 진행건 ================= */
+  /* 순서: 1 예약금 → 2 여권사본(O/X) → 3 잔금안내·준비사항 → 4 잔금결제 → 5 최종 안내
+     체크 상태는 key(deposit·passport…)로 저장되므로, 예전에 저장된 건도 새 순서로 그대로 표시됩니다. */
   var CHECKLIST = [
-    { k: 'passport', label: '여권사본' },
     { k: 'deposit', label: '예약금' },
+    { k: 'passport', label: '여권사본 (O/X)' },
     { k: 'notice', label: '잔금안내, 준비사항 안내' },
     { k: 'balance', label: '잔금결제' },
     { k: 'final', label: '최종 안내사항' }
@@ -402,6 +465,12 @@
       if (job.bookingCode) sub.push('예약 ' + job.bookingCode);
       if (job.productCode) sub.push('상품 ' + job.productCode);
       if (job.date) sub.push(dotYmd(job.date));
+      var arrTxt = '';
+      if (job.arr) {
+        var kd = keepUntil(job.arr), ad = dateFrom(job.arr);
+        arrTxt = '<p class="prog-txt" style="margin-top:5px;color:var(--navy-soft);font-weight:700">도착 ' + esc(mdd(job.arr)) +
+          (ad ? '(' + WD[ad.getDay()] + ')' : '') + ' · ' + esc(mdSmart(kd)) + '까지 진행건 유지 → 이후 자동 보관</p>';
+      }
       return '' +
         '<article class="item" data-id="' + job.id + '" data-act="open" style="cursor:pointer">' +
           '<div class="item-top">' +
@@ -414,7 +483,8 @@
             '<span class="dday">' + done + '/' + CHECKLIST.length + '</span>' +
           '</div>' +
           '<div class="prog"><div class="prog-bar" style="width:' + pct + '%"></div></div>' +
-          '<p class="prog-txt">' + (done === CHECKLIST.length ? '체크리스트 완료 — 보관함으로 옮길 수 있어요' : '다음: ' + (CHECKLIST.filter(function (c) { return !(job.checklist && job.checklist[c.k] && job.checklist[c.k].done); })[0] || {}).label) + '</p>' +
+          arrTxt +
+          '<p class="prog-txt" style="margin-top:2px">' + (done === CHECKLIST.length ? '체크리스트 완료 — 보관함으로 옮길 수 있어요' : '다음: ' + (CHECKLIST.filter(function (c) { return !(job.checklist && job.checklist[c.k] && job.checklist[c.k].done); })[0] || {}).label) + '</p>' +
         '</article>';
     }).join('');
   }
@@ -460,7 +530,7 @@
 
     box.innerHTML = '' +
       '<p class="detail-title">' + esc(jobTitle(job)) + '</p>' +
-      '<p class="detail-sub">' + esc([job.type, job.pax, job.date ? dotYmd(job.date) : '', job.phone].filter(Boolean).join(' · ') || '손님 정보 없음') + '</p>' +
+      '<p class="detail-sub">' + esc([job.type, job.pax, job.date ? '출발 ' + dotYmd(job.date) : '', job.arr ? '도착 ' + dotYmd(job.arr) : '', job.phone].filter(Boolean).join(' · ') || '손님 정보 없음') + '</p>' +
 
       '<div class="card">' +
         '<p class="card-title">상품 · 예약</p>' +
@@ -470,6 +540,13 @@
           '<div class="field"><label>예약코드</label>' +
             '<input type="text" data-f="bookingCode" value="' + esc(job.bookingCode || '') + '" placeholder="예약번호" autocomplete="off"></div>' +
         '</div>' +
+        '<div class="row two" style="margin-top:12px">' +
+          '<div class="field" style="margin-bottom:0"><label>출발일</label>' +
+            '<input type="date" data-f="date" value="' + esc(job.date || '') + '"></div>' +
+          '<div class="field" style="margin-bottom:0"><label>도착일</label>' +
+            '<input type="date" id="jobArr" data-f="arr" value="' + esc(job.arr || '') + '"></div>' +
+        '</div>' +
+        '<p class="hint" id="arrHint">' + arrHintText(job) + '</p>' +
         '<p class="card-title" style="margin:16px 0 8px">커미션 (내가 입력)</p>' +
         '<div class="comm">' +
           '<select id="commType" style="min-height:44px;border:1px solid var(--line);border-radius:12px;padding:0 10px;font-size:14px;background:#fff;color:var(--navy)">' +
@@ -489,12 +566,14 @@
 
       (job.req ? '<div class="card"><p class="card-title">손님 요구사항</p><p class="item-req" style="margin-top:0">' + esc(job.req) + '</p></div>' : '') +
 
-      '<div class="btn-row">' +
-        '<button class="btn ghost" id="jobDone">완료 → 보관함</button>' +
-        '<button class="btn line" id="jobCancel">취소 → 보관함</button>' +
+      '<div class="btn-row" style="margin-top:16px">' +
+        '<button class="btn" id="jobSave" style="flex:2">저장</button>' +
+        '<button class="btn line" id="jobCancel" style="flex:1;color:var(--alert);border-color:#E3C4BC">취소</button>' +
       '</div>' +
+      '<p class="hint" style="margin-top:8px">저장 — 이 건을 <b>진행건에 그대로</b> 둡니다 (도착+3일까지 유지).<br>취소 — <b>5섹션 보관함</b>으로 옮겨 ‘취소’로 30일 보관합니다.</p>' +
       '<div class="btn-row tight">' +
-        '<button class="btn line" id="jobDelete" style="color:var(--alert)">이 건 삭제</button>' +
+        '<button class="btn sub line" id="jobDone">완료 → 보관함</button>' +
+        '<button class="btn sub line" id="jobDelete" style="color:var(--alert)">이 건 삭제</button>' +
       '</div>' +
       (job.sample ? '<p class="hint">샘플로 넣어 둔 건입니다. 실제로 쓰실 때는 위 ‘이 건 삭제’로 지우면 됩니다.</p>' : '');
 
@@ -502,6 +581,15 @@
   }
 
   function saveJob(job) { job.updatedAt = Date.now(); saveJobs(); }
+
+  function arrHintText(job) {
+    var kd = keepUntil(job.arr);
+    if (!kd) return '도착일을 넣으면 도착+3일까지 이 진행건에 그대로 유지되고, 그 뒤 앱을 열 때 자동으로 5섹션 보관함(지난건)으로 옮겨집니다.';
+    if (today().getTime() > kd.getTime()) {
+      return '도착 ' + mdd(job.arr) + ' · 유지 기간(' + mdSmart(kd) + '까지)이 지나, 앱을 열 때 보관함으로 옮겨집니다.';
+    }
+    return '도착 ' + mdd(job.arr) + ' · ' + mdSmart(kd) + '까지 이 진행건에 유지되고, 그 뒤 앱을 열 때 자동으로 보관함으로 옮겨집니다.';
+  }
 
   function bindJobDetail(job) {
     $$('#jobDetail [data-f]').forEach(function (inp) {
@@ -526,6 +614,15 @@
     });
     var cm = $('#commMemo');
     if (cm) cm.addEventListener('input', function () { job.commissionMemo = cm.value; saveJob(job); });
+
+    $$('#jobDetail input[type=date][data-f]').forEach(function (inp) {
+      inp.addEventListener('change', function () {
+        job[inp.getAttribute('data-f')] = inp.value;
+        saveJob(job);
+        if (detailId === job.id) renderJobDetail();
+        toast(inp.getAttribute('data-f') === 'arr' ? '도착일을 저장했습니다' : '출발일을 저장했습니다');
+      });
+    });
 
     $('#jobDetail').onclick = function (e) {
       var btn = e.target.closest('[data-act]');
@@ -574,19 +671,20 @@
       });
     });
 
+    var saveBtn = $('#jobSave');
+    if (saveBtn) saveBtn.addEventListener('click', function () {
+      saveJob(job);
+      var kd = keepUntil(job.arr);
+      detailId = null;
+      renderJobs();
+      showTab('4');
+      if (kd && today().getTime() > kd.getTime()) toast('저장했습니다 — 도착+3일이 지나 앱을 열 때 보관함으로 옮겨집니다');
+      else toast('저장했습니다 — 진행건에 그대로 유지됩니다');
+    });
     var doneBtn = $('#jobDone');
     if (doneBtn) doneBtn.addEventListener('click', function () { archiveJob(job, 'done'); });
     var cancelBtn = $('#jobCancel');
-    if (cancelBtn) cancelBtn.addEventListener('click', function () {
-      openModal({
-        title: '취소로 보관할까요?',
-        sub: '진행건에서 빼고 5섹션 지난건에 30일 보관합니다.',
-        actions: [
-          { label: '그대로 두기', kind: 'line', onClick: closeModal },
-          { label: '취소 → 보관함', kind: 'ghost', onClick: function () { closeModal(); archiveJob(job, 'cancel'); } }
-        ]
-      });
-    });
+    if (cancelBtn) cancelBtn.addEventListener('click', function () { archiveJob(job, 'cancel'); });
     var delBtn = $('#jobDelete');
     if (delBtn) delBtn.addEventListener('click', function () {
       openModal({
@@ -618,7 +716,32 @@
     renderJobs();
     renderArchive();
     showTab('5');
-    toast(result === 'done' ? '완료 — 5섹션 지난건으로 옮겼습니다' : '취소 — 5섹션 지난건으로 옮겼습니다');
+    if (result === 'done') toast('완료 — 5섹션 지난건으로 옮겼습니다');
+    else if (result === 'cancel') toast('취소 — 5섹션 보관함에 30일 보관합니다 (진행건으로 복원 가능)');
+    else toast('5섹션 지난건으로 옮겼습니다');
+  }
+
+  /* 도착+3일이 지난 진행건을 앱을 열 때 지난건으로 자동 이관 */
+  function autoArchiveArrived() {
+    var t = today().getTime();
+    var moved = [];
+    DB.jobs = DB.jobs.filter(function (job) {
+      var kd = keepUntil(job.arr);
+      if (kd && t > kd.getTime()) { moved.push(job); return false; }
+      return true;
+    });
+    if (!moved.length) return 0;
+    saveJobs();
+    moved.forEach(function (job) {
+      var copy = JSON.parse(JSON.stringify(job));
+      copy.kind = 'job';
+      copy.result = 'auto';
+      copy.autoArchived = true;
+      copy.archivedAt = Date.now();
+      DB.arc.unshift(copy);
+    });
+    saveArc();
+    return moved.length;
   }
 
   /* ================= 5섹션 · 보관함 ================= */
@@ -666,13 +789,15 @@
       if (a.kind === 'job') {
         var done = 0;
         CHECKLIST.forEach(function (c) { if (a.checklist && a.checklist[c.k] && a.checklist[c.k].done) done++; });
+        var badge = a.result === 'cancel' ? { cls: 'alert', txt: '취소' }
+          : (a.result === 'auto' ? { cls: 'navy', txt: '자동이관 (도착+3일)' } : { cls: 'ok', txt: '완료' });
         return '' +
           '<article class="item" data-id="' + a.id + '">' +
             '<div class="item-top">' +
               '<div style="min-width:0">' +
                 '<h3 class="item-title">' + esc(jobTitle(a)) +
-                  '<span class="tag ' + (a.result === 'done' ? 'ok' : 'alert') + '">' + (a.result === 'done' ? '완료' : '취소') + '</span></h3>' +
-                '<p class="item-meta">' + esc([a.bookingCode ? '예약 ' + a.bookingCode : '', a.productCode ? '상품 ' + a.productCode : '', dotYmd(ymd(new Date(a.archivedAt)))].filter(Boolean).join(' · ')) + '</p>' +
+                  '<span class="tag ' + badge.cls + '">' + badge.txt + '</span></h3>' +
+                '<p class="item-meta">' + esc([a.bookingCode ? '예약 ' + a.bookingCode : '', a.productCode ? '상품 ' + a.productCode : '', a.arr ? '도착 ' + mdd(a.arr) : '', dotYmd(ymd(new Date(a.archivedAt)))].filter(Boolean).join(' · ')) + '</p>' +
                 '<p class="prog-txt" style="margin-top:6px">체크 ' + done + '/' + CHECKLIST.length + (a.commissionValue ? ' · 커미션 ' + esc(a.commissionType === 'amt' ? P.fmt(a.commissionValue) + '원' : a.commissionValue + '%') : '') + '</p>' +
               '</div>' +
               '<span class="dday' + soon + '">D-' + left + ' 남음</span>' +
@@ -683,7 +808,7 @@
             '</div>' +
           '</article>';
       }
-      var meta = [a.dest, a.date ? dotYmd(a.date) : '', a.pax, a.phone].filter(Boolean).join(' · ');
+      var meta = [a.dest, a.date ? '출발 ' + dotYmd(a.date) : '', a.arr ? '도착 ' + dotYmd(a.arr) : '', a.pax, a.phone].filter(Boolean).join(' · ');
       return '' +
         '<article class="item" data-id="' + a.id + '">' +
           '<div class="item-top">' +
@@ -734,7 +859,7 @@
     var job = {
       id: uid(),
       name: a.name || '', phone: a.phone || '', dest: a.dest || '',
-      date: a.date || '', pax: a.pax || '', type: a.type || '',
+      date: a.date || '', arr: a.arr || '', pax: a.pax || '', type: a.type || '',
       req: a.req || a.memo || '',
       productCode: a.productCode || '', bookingCode: a.bookingCode || '',
       commissionType: a.commissionType || 'pct', commissionValue: a.commissionValue || '',
@@ -1574,7 +1699,7 @@
       c.passport = { done: true, date: ymd(today()), memo: '여권사본 카톡 수령' };
       DB.jobs.push({
         id: uid(), sample: true,
-        name: '김진희', phone: '010-0000-0000', dest: '다낭', date: '', pax: '성인2',
+        name: '김진희', phone: '010-0000-0000', dest: '다낭', date: '', pax: '성인 2',
         type: '패키지', req: '3박 5일, 5성급, 노쇼핑',
         productCode: 'AVP231270212RSB', bookingCode: '', commissionType: 'pct',
         commissionValue: '', commissionMemo: '', checklist: c,
@@ -1586,6 +1711,7 @@
 
   var purged = purgeExpired();
   seed();
+  var autoMoved = autoArchiveArrived();
   fillQuoteFields();
   renderInquiries();
   renderJobs();
@@ -1596,6 +1722,7 @@
   showTab(/^[1-5]$/.test(hash) ? hash : '1', { noScroll: true });
 
   if (purged > 0) setTimeout(function () { toast('보관 기한(30일)이 지난 ' + purged + '건을 정리했습니다'); }, 700);
+  if (autoMoved > 0) setTimeout(function () { toast('도착+3일이 지난 ' + autoMoved + '건을 5섹션 지난건으로 옮겼습니다'); }, purged > 0 ? 3200 : 700);
 
   // 서비스워커
   if ('serviceWorker' in navigator) {

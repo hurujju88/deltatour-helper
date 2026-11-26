@@ -104,6 +104,8 @@ input::placeholder,textarea::placeholder{color:#B4AE9F}
 input[type=date]{min-height:48px}
 .row{display:grid;gap:10px}
 .row.two{grid-template-columns:1fr 1fr}
+.row.three{grid-template-columns:1fr 1fr 1fr;gap:8px}
+.row.three input{text-align:center;font-weight:700}
 
 /* chips */
 .chips{display:flex;flex-wrap:wrap;gap:7px}
@@ -385,13 +387,31 @@ details.tool .tool-body{padding-top:10px}
       </div>
       <div class="row two">
         <div class="field">
-          <label for="qDate">날짜 (출발 희망일)</label>
+          <label for="qDate">출발일</label>
           <input type="date" id="qDate">
         </div>
         <div class="field">
-          <label for="qPax">인원</label>
-          <input type="text" id="qPax" placeholder="성인2 아동1">
+          <label for="qArr">도착일</label>
+          <input type="date" id="qArr">
         </div>
+      </div>
+      <div class="field">
+        <span class="field-label">인원</span>
+        <div class="row three">
+          <div class="field" style="margin-bottom:0">
+            <label for="qPaxAdult">성인</label>
+            <input type="number" id="qPaxAdult" inputmode="numeric" min="0" step="1" placeholder="0">
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label for="qPaxChild">아동</label>
+            <input type="number" id="qPaxChild" inputmode="numeric" min="0" step="1" placeholder="0">
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label for="qPaxInfant">유아</label>
+            <input type="number" id="qPaxInfant" inputmode="numeric" min="0" step="1" placeholder="0">
+          </div>
+        </div>
+        <p class="hint" id="qPaxOld" hidden></p>
       </div>
       <div class="field">
         <label for="qDest">여행지역</label>
@@ -527,11 +547,11 @@ details.tool .tool-body{padding-top:10px}
   <section class="panel" id="p4">
     <div class="sec-head">
       <h1 class="sec-title">4섹션 · 진행건</h1>
-      <p class="sec-sub">진행 중인 손님 건입니다. 눌러서 서류·결제 체크리스트를 관리하세요.</p>
+      <p class="sec-sub">진행 중인 손님 건입니다. 도착일을 넣으면 도착+3일까지 이 목록에 유지되고, 그 뒤 앱을 열 때 자동으로 5섹션 보관함으로 넘어갑니다.</p>
     </div>
     <div class="list-head" style="margin-top:0">
       <h2>진행중 <span class="cnt" id="jobCount">0</span></h2>
-      <span style="font-size:11.5px;color:var(--muted-2)">완료·취소는 5섹션으로</span>
+      <span style="font-size:11.5px;color:var(--muted-2)">저장·취소·완료는 5섹션으로</span>
     </div>
     <div id="jobList"></div>
   </section>
@@ -546,7 +566,7 @@ details.tool .tool-body{padding-top:10px}
   <section class="panel" id="p5">
     <div class="sec-head">
       <h1 class="sec-title">5섹션 · 보관함</h1>
-      <p class="sec-sub">지난 건과 미진행 문의를 30일 보관합니다. 기한이 지난 항목은 앱을 열 때 자동으로 정리됩니다.</p>
+      <p class="sec-sub">지난 건과 미진행 문의를 30일 보관합니다. 기한이 지난 항목은 앱을 열 때 자동으로 정리됩니다. (도착+3일이 지난 진행건은 자동 이관)</p>
     </div>
     <div class="seg" id="arcSeg">
       <button class="on" data-v="job">지난건</button>

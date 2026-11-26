@@ -1,5 +1,5 @@
-/* 델타투어 보조 — 오프라인 캐시 (v6, 5섹션 개편) */
-var CACHE = 'deltatour-helper-v8';
+/* 델타투어 보조 — 오프라인 캐시 (v7, 체크리스트 순서·도착+3일·취소 이동) */
+var CACHE = 'deltatour-helper-v9';
 var ASSETS = [
   './',
   './index.html',
