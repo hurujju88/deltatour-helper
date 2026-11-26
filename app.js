@@ -514,11 +514,12 @@
     job.checklist = job.checklist || emptyChecks();
     CHECKLIST.forEach(function (c) { if (!job.checklist[c.k]) job.checklist[c.k] = { done: false, date: '', memo: '' }; });
 
-    var checksHTML = CHECKLIST.map(function (c) {
+    var checksHTML = CHECKLIST.map(function (c, idx) {
       var s = job.checklist[c.k];
       return '' +
         '<div class="check" data-k="' + c.k + '">' +
           '<div class="check-row">' +
+            '<span class="check-idx">' + (idx + 1) + '</span>' +
             '<button type="button" class="check-box ' + (s.done ? 'on' : '') + '" data-act="toggle" aria-pressed="' + (s.done ? 'true' : 'false') + '" aria-label="' + esc(c.label) + ' 체크">' + (s.done ? '\u2713' : '') + '</button>' +
             '<span class="check-label ' + (s.done ? 'done' : '') + '" data-act="toggle">' + esc(c.label) + '</span>' +
             '<span class="check-date">' + (s.date ? esc(s.date.replace(/-/g, '.')) : '') + '</span>' +
