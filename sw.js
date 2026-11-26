@@ -1,8 +1,10 @@
-/* 델타투어 실무 보조 — 오프라인 캐시 */
-var CACHE = 'deltatour-helper-v5';
+/* 델타투어 보조 — 오프라인 캐시 (v6, 5섹션 개편) */
+var CACHE = 'deltatour-helper-v6';
 var ASSETS = [
   './',
   './index.html',
+  './app.js',
+  './parse.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
@@ -37,18 +39,24 @@ self.addEventListener('fetch', function (event) {
   var req = event.request;
   if (req.method !== 'GET') return;
 
+  var url;
+  try { url = new URL(req.url); } catch (e) { return; }
+  if (url.origin !== self.location.origin) return; // 프록시·외부 요청은 그대로 통과
+
   event.respondWith(
     caches.match(req).then(function (hit) {
-      if (hit) return hit;
-      return fetch(req).then(function (res) {
+      var network = fetch(req).then(function (res) {
         if (res && res.status === 200 && res.type === 'basic') {
           var copy = res.clone();
           caches.open(CACHE).then(function (cache) { cache.put(req, copy); });
         }
         return res;
       }).catch(function () {
-        return caches.match('./index.html');
+        return hit || caches.match('./index.html');
       });
+      // 문서는 네트워크 우선(업데이트 반영), 그 외는 캐시 우선 + 백그라운드 갱신
+      if (req.mode === 'navigate') return network;
+      return hit || network;
     })
   );
 });
