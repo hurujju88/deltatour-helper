@@ -36,7 +36,7 @@
     var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || ''));
     return m ? m[2] + '.' + m[3] : '';
   }
-  function md(d) { return (d.getMonth() + 1) + '.' + pad2(d.getDate()); }
+  function md(d) { return pad2(d.getMonth() + 1) + '.' + pad2(d.getDate()); }
   function mdSmart(d) { return (d.getFullYear() !== today().getFullYear() ? d.getFullYear() + '.' : '') + md(d); }
   /* 도착일 + 3일까지는 진행건에 유지 (도착일이 없으면 계속 유지) */
   function keepUntil(arr) {
@@ -466,7 +466,11 @@
       if (job.productCode) sub.push('상품 ' + job.productCode);
       if (job.date) sub.push(dotYmd(job.date));
       var arrTxt = '';
-      if (job.arr) {
+      if (job.hold) {
+        var hd = dateFrom(job.arr);
+        arrTxt = '<p class="prog-txt" style="margin-top:5px;color:var(--navy-soft);font-weight:700">도착 ' + esc(mdd(job.arr)) +
+          (hd ? '(' + WD[hd.getDay()] + ')' : '') + ' · 직접 복원함 (자동 보관 제외)</p>';
+      } else if (job.arr) {
         var kd = keepUntil(job.arr), ad = dateFrom(job.arr);
         arrTxt = '<p class="prog-txt" style="margin-top:5px;color:var(--navy-soft);font-weight:700">도착 ' + esc(mdd(job.arr)) +
           (ad ? '(' + WD[ad.getDay()] + ')' : '') + ' · ' + esc(mdSmart(kd)) + '까지 진행건 유지 → 이후 자동 보관</p>';
@@ -583,6 +587,9 @@
   function saveJob(job) { job.updatedAt = Date.now(); saveJobs(); }
 
   function arrHintText(job) {
+    if (job.hold) {
+      return '보관함에서 직접 꺼낸 건이라 자동으로 넘어가지 않습니다. 끝났으면 아래 ‘완료’나 ‘취소’로 직접 옮겨 주세요.';
+    }
     var kd = keepUntil(job.arr);
     if (!kd) return '도착일을 넣으면 도착+3일까지 이 진행건에 그대로 유지되고, 그 뒤 앱을 열 때 자동으로 5섹션 보관함(지난건)으로 옮겨집니다.';
     if (today().getTime() > kd.getTime()) {
@@ -727,6 +734,7 @@
     var moved = [];
     DB.jobs = DB.jobs.filter(function (job) {
       var kd = keepUntil(job.arr);
+      if (job.hold) return true;
       if (kd && t > kd.getTime()) { moved.push(job); return false; }
       return true;
     });
@@ -797,7 +805,7 @@
               '<div style="min-width:0">' +
                 '<h3 class="item-title">' + esc(jobTitle(a)) +
                   '<span class="tag ' + badge.cls + '">' + badge.txt + '</span></h3>' +
-                '<p class="item-meta">' + esc([a.bookingCode ? '예약 ' + a.bookingCode : '', a.productCode ? '상품 ' + a.productCode : '', a.arr ? '도착 ' + mdd(a.arr) : '', dotYmd(ymd(new Date(a.archivedAt)))].filter(Boolean).join(' · ')) + '</p>' +
+                '<p class="item-meta">' + esc([a.bookingCode ? '예약 ' + a.bookingCode : '', a.productCode ? '상품 ' + a.productCode : '', a.arr ? '도착 ' + mdd(a.arr) : '', '보관 ' + dotYmd(ymd(new Date(a.archivedAt)))].filter(Boolean).join(' · ')) + '</p>' +
                 '<p class="prog-txt" style="margin-top:6px">체크 ' + done + '/' + CHECKLIST.length + (a.commissionValue ? ' · 커미션 ' + esc(a.commissionType === 'amt' ? P.fmt(a.commissionValue) + '원' : a.commissionValue + '%') : '') + '</p>' +
               '</div>' +
               '<span class="dday' + soon + '">D-' + left + ' 남음</span>' +
@@ -868,6 +876,8 @@
       createdAt: Date.now(), updatedAt: Date.now()
     };
     CHECKLIST.forEach(function (c) { if (!job.checklist[c.k]) job.checklist[c.k] = { done: false, date: '', memo: '' }; });
+    var kd2 = keepUntil(job.arr);
+    if (kd2 && today().getTime() > kd2.getTime()) job.hold = true; // 이미 지난 건은 다시 꺼냈을 때 또 빠지지 않게
     DB.jobs.unshift(job);
     saveJobs();
     renderArchive();
